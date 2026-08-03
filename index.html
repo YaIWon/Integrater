@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Universal File Integrator Pro - Enterprise-grade file integration with Solidity support">
+    <meta name="theme-color" content="#0a0e1a">
+    <title>🔮 Universal Integrator Pro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/themes.css">
+</head>
+<body>
+    <div id="app" role="main">
+        <!-- Header -->
+        <header class="app-header" role="banner">
+            <div class="logo">
+                <span class="icon" aria-hidden="true">🔮</span>
+                <h1>Universal Integrator <span class="version">v4.0</span></h1>
+            </div>
+            <div class="header-controls">
+                <button id="themeToggle" class="icon-btn" aria-label="Toggle theme">🌙</button>
+                <button id="settingsBtn" class="icon-btn" aria-label="Settings">⚙️</button>
+                <button id="clearAllBtn" class="icon-btn danger" aria-label="Clear all data">🗑️</button>
+                <button id="exportBtn" class="icon-btn" aria-label="Export data">📤</button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="main-nav" role="navigation" aria-label="Main navigation">
+            <button class="nav-btn active" data-tab="files" aria-selected="true">📁 Files</button>
+            <button class="nav-btn" data-tab="integrations" aria-selected="false">🔗 Integrations</button>
+            <button class="nav-btn" data-tab="modules" aria-selected="false">🧩 Modules</button>
+            <button class="nav-btn" data-tab="analytics" aria-selected="false">📊 Analytics</button>
+            <button class="nav-btn" data-tab="api" aria-selected="false">🌐 API</button>
+            <button class="nav-btn" data-tab="solidity" aria-selected="false">⛓️ Solidity</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Files Tab -->
+            <section class="tab-content active" id="filesTab" role="tabpanel" aria-label="Files">
+                <div class="file-upload-grid">
+                    <!-- Upload Panel -->
+                    <div class="upload-panel panel">
+                        <div class="panel-header">
+                            <h3>📤 Upload Files</h3>
+                            <div class="panel-actions">
+                                <button id="folderBtn" class="btn secondary" aria-label="Upload folder">📂 Folder</button>
+                                <button id="fileBtn" class="btn primary" aria-label="Upload files">📄 File</button>
+                            </div>
+                        </div>
+                        <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Drop files here">
+                            <div class="drop-content">
+                                <span class="drop-icon" aria-hidden="true">📥</span>
+                                <p>Drop files or folders here</p>
+                                <small>All file types supported including .sol (Solidity)</small>
+                            </div>
+                        </div>
+                        <div id="uploadProgress" class="progress-bar" style="display:none;" role="progressbar" aria-label="Upload progress">
+                            <div class="progress-fill"></div>
+                            <span class="progress-text">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- File List Panel -->
+                    <div class="files-panel panel">
+                        <div class="panel-header">
+                            <h3>📋 File Queue</h3>
+                            <span id="fileCount" class="badge">0 files</span>
+                        </div>
+                        <div id="fileList" class="file-list" role="list">
+                            <div class="empty-state">
+                                <span aria-hidden="true">📭</span>
+                                <p>No files uploaded yet</p>
+                                <small>Drop files or use the upload buttons above</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Panel -->
+                <div id="analysisPanel" class="analysis-panel panel" style="display:none;">
+                    <div class="panel-header">
+                        <h3>🔍 Analysis Results</h3>
+                        <div class="panel-actions">
+                            <button id="analyzeBtn" class="btn primary">🔬 Analyze All</button>
+                            <button id="verifyBtn" class="btn success">✅ Verify with API</button>
+                            <button id="integrateBtn" class="btn accent">🔗 Integrate</button>
+                            <button id="exportAnalysisBtn" class="btn secondary">📤 Export</button>
+                        </div>
+                    </div>
+                    <div id="analysisResults" class="analysis-grid"></div>
+                </div>
+            </section>
+
+            <!-- Integrations Tab -->
+            <section class="tab-content" id="integrationsTab" role="tabpanel" aria-label="Integrations">
+                <div class="integrations-header">
+                    <h3>🔗 Active Integrations</h3>
+                    <div class="panel-actions">
+                        <button id="newIntegrationBtn" class="btn primary">➕ New Integration</button>
+                        <button id="exportIntegrationsBtn" class="btn secondary">📤 Export</button>
+                    </div>
+                </div>
+                <div id="integrationGrid" class="integration-grid"></div>
+            </section>
+
+            <!-- Modules Tab -->
+            <section class="tab-content" id="modulesTab" role="tabpanel" aria-label="Modules">
+                <div class="modules-header">
+                    <h3>🧩 Installed Modules</h3>
+                    <button id="installModuleBtn" class="btn primary">📦 Install Module</button>
+                </div>
+                <div id="moduleGrid" class="module-grid"></div>
+            </section>
+
+            <!-- Analytics Tab -->
+            <section class="tab-content" id="analyticsTab" role="tabpanel" aria-label="Analytics">
+                <div class="analytics-dashboard">
+                    <div class="stat-cards">
+                        <div class="stat-card">
+                            <span class="stat-label">Total Files</span>
+                            <span class="stat-value" id="totalFiles">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Integrations</span>
+                            <span class="stat-value" id="totalIntegrations">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Modules</span>
+                            <span class="stat-value" id="totalModules">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">API Calls</span>
+                            <span class="stat-value" id="totalApiCalls">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Smart Contracts</span>
+                            <span class="stat-value" id="totalContracts">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Uptime</span>
+                            <span class="stat-value" id="uptime">0s</span>
+                        </div>
+                    </div>
+                    <div id="analyticsChart" class="chart-container">
+                        <div class="empty-state">
+                            <span aria-hidden="true">📊</span>
+                            <p>Analytics data will appear here</p>
+                            <small>Upload files to start tracking</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- API Tab -->
+            <section class="tab-content" id="apiTab" role="tabpanel" aria-label="API">
+                <div class="api-controls panel">
+                    <h3>🌐 API Integration</h3>
+                    <div class="api-endpoint-form">
+                        <input type="text" id="apiEndpoint" placeholder="API Endpoint URL" class="input-field" aria-label="API Endpoint">
+                        <select id="apiMethod" class="select-field" aria-label="API Method">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                        <button id="testApi
