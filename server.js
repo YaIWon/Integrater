@@ -78,7 +78,7 @@ app.use(helmet({
 }));
 
 // ==========================================
-= CORS
+// CORS
 // ==========================================
 app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
@@ -89,7 +89,7 @@ app.use(cors({
 }));
 
 // ==========================================
-= RATE LIMITING
+// RATE LIMITING
 // ==========================================
 const limiter = rateLimit({
     windowMs: (process.env.RATE_LIMIT_WINDOW || 15) * 60 * 1000,
@@ -102,18 +102,18 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // ==========================================
-= BODY PARSERS
+// BODY PARSERS
 // ==========================================
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ==========================================
-= STATIC FILES
+// STATIC FILES
 // ==========================================
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // ==========================================
-= FILE UPLOAD CONFIGURATION
+// FILE UPLOAD CONFIGURATION - COMPLETE SUPPORT
 // ==========================================
 const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
@@ -128,22 +128,28 @@ const storage = multer.diskStorage({
     }
 });
 
+// Get allowed extensions from environment
+const getAllowedExtensions = () => {
+    const extString = process.env.ALLOWED_EXTENSIONS || 'html,css,js,json,py,sol,xml,txt,md,csv,png,jpg,jpeg,gif,webp,mp3,wav,ogg,mp4,webm,avi,wasm';
+    return extString.split(',').map(ext => ext.trim().toLowerCase());
+};
+
 const fileFilter = (req, file, cb) => {
-    const allowedExtensions = (process.env.ALLOWED_EXTENSIONS || 'html,css,js,json,py,sol,xml,txt,md,csv,png,jpg,jpeg,gif,webp,mp3,wav,ogg,mp4,webm,avi,wasm')
-        .split(',');
+    const allowedExtensions = getAllowedExtensions();
     const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
     
     if (allowedExtensions.includes(ext)) {
         cb(null, true);
     } else {
-        cb(new Error(`File type .${ext} not allowed`), false);
+        logger.warn(`Blocked file: ${file.originalname} (extension: ${ext})`);
+        cb(new Error(`File type .${ext} not allowed. Supported: ${allowedExtensions.join(', ')}`), false);
     }
 };
 
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: parseInt(process.env.MAX_FILE_SIZE) || 52428800
+        fileSize: parseInt(process.env.MAX_FILE_SIZE) || 1073741824 // 1GB default
     },
     fileFilter: fileFilter
 });
@@ -154,33 +160,41 @@ const upload = multer({
 
 // Health Check
 app.get('/api/health', (req, res) => {
+    const allowed = getAllowedExtensions();
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         version: process.env.APP_VERSION || '4.0.0',
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
+        supportedExtensions: allowed,
+        extensionCount: allowed.length
     });
 });
 
-// Upload Files
-app.post('/api/upload', upload.array('files', 100), async (req, res) => {
+// Upload Files - Universal Support
+app.post('/api/upload', upload.array('files', 500), async (req, res) => {
     try {
-        const files = req.files.map(file => ({
-            id: uuidv4(),
-            originalName: file.originalname,
-            filename: file.filename,
-            path: file.path,
-            size: file.size,
-            mimetype: file.mimetype,
-            uploadedAt: new Date().toISOString()
-        }));
+        const files = req.files.map(file => {
+            const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+            return {
+                id: uuidv4(),
+                originalName: file.originalname,
+                filename: file.filename,
+                path: file.path,
+                size: file.size,
+                mimetype: file.mimetype,
+                extension: ext,
+                uploadedAt: new Date().toISOString()
+            };
+        });
 
         logger.info(`Uploaded ${files.length} files`);
         
         res.json({
             success: true,
             files: files,
-            count: files.length
+            count: files.length,
+            totalSize: files.reduce((sum, f) => sum + f.size, 0)
         });
     } catch (error) {
         logger.error('Upload error:', error);
@@ -191,121 +205,14 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
     }
 });
 
-// Analyze Files
-app.post('/api/analyze', async (req, res) => {
-    try {
-        const { fileIds } = req.body;
-        
-        // Analysis logic here
-        const analysis = {
-            success: true,
-            results: fileIds.map(id => ({
-                id: id,
-                type: 'javascript',
-                complexity: 'medium',
-                elements: 42
-            }))
-        };
-        
-        res.json(analysis);
-    } catch (error) {
-        logger.error('Analysis error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// Solidity Specific Routes
-app.post('/api/solidity/analyze', async (req, res) => {
-    try {
-        const { content, filename } = req.body;
-        
-        // Solidity analysis logic
-        const analysis = {
-            success: true,
-            name: filename.replace(/\.sol$/, ''),
-            version: '0.8.19',
-            contracts: ['MainContract'],
-            functions: ['transfer', 'balanceOf'],
-            imports: ['@openzeppelin/contracts/token/ERC20/ERC20.sol'],
-            securityFeatures: ['require', 'modifiers'],
-            gasOptimizations: ['view functions', 'memory usage'],
-            complexity: 'medium',
-            hasRequire: content.includes('require('),
-            hasEmit: content.includes('emit '),
-            isAbstract: content.includes('abstract')
-        };
-        
-        res.json(analysis);
-    } catch (error) {
-        logger.error('Solidity analysis error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-app.post('/api/solidity/deploy', async (req, res) => {
-    try {
-        const { bytecode, abi, network } = req.body;
-        
-        // Simulate deployment
-        const deployment = {
-            success: true,
-            address: `0x${Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-            transactionHash: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-            network: network || 'mainnet',
-            blockNumber: Math.floor(Math.random() * 10000000) + 10000000,
-            gasUsed: Math.floor(Math.random() * 1000000) + 100000,
-            timestamp: new Date().toISOString()
-        };
-        
-        logger.info(`Deployed contract to ${deployment.address}`);
-        
-        res.json(deployment);
-    } catch (error) {
-        logger.error('Deployment error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// Integration Routes
-app.post('/api/integrate', async (req, res) => {
-    try {
-        const { files, type, name } = req.body;
-        
-        const integration = {
-            id: uuidv4(),
-            name: name || `Integration ${Date.now()}`,
-            type: type || 'app',
-            files: files || [],
-            status: 'created',
-            createdAt: new Date().toISOString(),
-            config: {
-                entry: files?.length > 0 ? files[0] : null,
-                dependencies: []
-            }
-        };
-        
-        logger.info(`Created integration: ${integration.name}`);
-        
-        res.json({
-            success: true,
-            integration: integration
-        });
-    } catch (error) {
-        logger.error('Integration error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
+// Get supported file types
+app.get('/api/supported-types', (req, res) => {
+    const allowed = getAllowedExtensions();
+    res.json({
+        success: true,
+        extensions: allowed,
+        count: allowed.length
+    });
 });
 
 // ==========================================
@@ -325,9 +232,12 @@ app.use((err, req, res, next) => {
 = START SERVER
 // ==========================================
 app.listen(PORT, () => {
+    const allowed = getAllowedExtensions();
     logger.info(`🚀 Universal Integrator Server running on port ${PORT}`);
     logger.info(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.info(`🌐 URL: http://localhost:${PORT}`);
+    logger.info(`📂 Supported file types: ${allowed.length}`);
+    logger.info(`📋 Extensions: ${allowed.join(', ')}`);
     
     // Create necessary directories
     const directories = ['uploads', 'logs', 'temp', 'data', 'data/cache'];
