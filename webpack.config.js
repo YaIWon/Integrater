@@ -65,23 +65,70 @@ export default {
                     }
                 ]
             },
+            // Handle ALL file types as assets
             {
-                test: /\.(png|svg|jpg|jpeg|gif|webp|ico)$/,
+                test: /\.(png|svg|jpg|jpeg|gif|webp|avif|ico|cur|psd|ai|eps|raw)$/,
                 type: 'asset/resource',
                 generator: {
                     filename: 'images/[name].[hash][ext]'
                 }
             },
             {
-                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                test: /\.(woff|woff2|eot|ttf|otf|svg|dfont)$/,
                 type: 'asset/resource',
                 generator: {
                     filename: 'fonts/[name].[hash][ext]'
                 }
             },
             {
-                test: /\.(html)$/,
-                use: ['html-loader']
+                test: /\.(mp3|wav|flac|aac|ogg|opus|m4a|aiff|wma)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'audio/[name].[hash][ext]'
+                }
+            },
+            {
+                test: /\.(mp4|webm|avi|mov|wmv|flv|mkv|ogv|3gp)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'video/[name].[hash][ext]'
+                }
+            },
+            {
+                test: /\.(pdf|doc|docx|odt|rtf|xls|xlsx|ppt|pptx)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'documents/[name].[hash][ext]'
+                }
+            },
+            {
+                test: /\.(zip|rar|7z|tar|gz|bz2|xz|iso|dmg|pkg|deb|rpm|apk|ipa)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'archives/[name].[hash][ext]'
+                }
+            },
+            {
+                test: /\.(exe|msi|dll|so|dylib|sys|drv|app)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'binaries/[name].[hash][ext]'
+                }
+            },
+            {
+                test: /\.(sol|vyper|yul|wasm|wast)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'blockchain/[name].[hash][ext]'
+                }
+            },
+            // Everything else
+            {
+                test: /\.(html|xml|txt|md|log|csv|tsv|sql|conf|cfg|ini|env|reg|plist|manifest|lock)$/,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'data/[name].[hash][ext]'
+                }
             }
         ]
     },
@@ -157,7 +204,8 @@ export default {
                 { from: 'config', to: 'config' },
                 { from: 'templates', to: 'templates' },
                 { from: 'data', to: 'data' },
-                { from: 'api', to: 'api' }
+                { from: 'api', to: 'api' },
+                { from: 'uploads', to: 'uploads', noErrorOnMissing: true }
             ]
         })
     ],
