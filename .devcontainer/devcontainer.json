@@ -1,0 +1,57 @@
+{
+  "name": "Universal Integrator Pro",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "formulahendry.auto-rename-tag",
+        "ritwickdey.LiveServer"
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "liveServer.settings.root": "/workspaces/universal-integrator",
+        "liveServer.settings.port": 5500,
+        "liveServer.settings.file": "index.html"
+      }
+    }
+  },
+
+  "postCreateCommand": "npm install",
+
+  "portsAttributes": {
+    "3000": {
+      "label": "App",
+      "onAutoForward": "openPreview"
+    },
+    "5500": {
+      "label": "Live Server",
+      "onAutoForward": "openPreview"
+    }
+  },
+
+  "forwardPorts": [3000, 5500],
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    }
+  },
+
+  "waitFor": "onCreateCommand",
+
+  "updateContentCommand": "npm install",
+
+  "postAttachCommand": "npm run dev",
+
+  "remoteUser": "node"
+}
