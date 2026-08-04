@@ -1,0 +1,606 @@
+{
+  "version": "4.0.0",
+  "description": "Complete API endpoint configuration for Universal Integrator Pro",
+  "baseUrls": {
+    "localhost": "http://localhost:3000",
+    "127.0.0.1": "http://127.0.0.1:3000",
+    "0.0.0.0": "http://0.0.0.0:3000"
+  },
+
+  "endpoints": {
+    "blockchain": {
+      "ethereum": {
+        "mainnet": {
+          "rpc": "https://mainnet.infura.io/v3",
+          "ws": "wss://mainnet.infura.io/ws/v3",
+          "explorer": "https://etherscan.io",
+          "api": "https://api.etherscan.io/api"
+        },
+        "goerli": {
+          "rpc": "https://goerli.infura.io/v3",
+          "ws": "wss://goerli.infura.io/ws/v3",
+          "explorer": "https://goerli.etherscan.io",
+          "api": "https://api-goerli.etherscan.io/api"
+        },
+        "sepolia": {
+          "rpc": "https://sepolia.infura.io/v3",
+          "ws": "wss://sepolia.infura.io/ws/v3",
+          "explorer": "https://sepolia.etherscan.io",
+          "api": "https://api-sepolia.etherscan.io/api"
+        },
+        "ganache": {
+          "rpc": "http://127.0.0.1:8545",
+          "ws": "ws://127.0.0.1:8545",
+          "explorer": "http://127.0.0.1:8545",
+          "api": "http://127.0.0.1:8545"
+        },
+        "hardhat": {
+          "rpc": "http://127.0.0.1:8545",
+          "ws": "ws://127.0.0.1:8545",
+          "explorer": "http://127.0.0.1:8545",
+          "api": "http://127.0.0.1:8545"
+        },
+        "anvil": {
+          "rpc": "http://127.0.0.1:8545",
+          "ws": "ws://127.0.0.1:8545",
+          "explorer": "http://127.0.0.1:8545",
+          "api": "http://127.0.0.1:8545"
+        }
+      },
+      "skale": {
+        "mainnet": {
+          "rpc": "https://mainnet.skalenodes.com/v1",
+          "explorer": "https://explorer.skale.space"
+        },
+        "calypso": {
+          "rpc": "https://calypso.skalenodes.com/v1",
+          "explorer": "https://calypso-explorer.skale.space"
+        },
+        "cryptoBlades": {
+          "rpc": "https://cryptoblades.skalenodes.com/v1",
+          "explorer": "https://cryptoblades-explorer.skale.space"
+        },
+        "europa": {
+          "rpc": "https://europa.skalenodes.com/v1",
+          "explorer": "https://europa-explorer.skale.space"
+        },
+        "nebula": {
+          "rpc": "https://nebula.skalenodes.com/v1",
+          "explorer": "https://nebula-explorer.skale.space"
+        },
+        "titan": {
+          "rpc": "https://titan.skalenodes.com/v1",
+          "explorer": "https://titan-explorer.skale.space"
+        },
+        "razor": {
+          "rpc": "https://razor.skalenodes.com/v1",
+          "explorer": "https://razor-explorer.skale.space"
+        },
+        "testnet": {
+          "rpc": "https://testnet.skalenodes.com/v1",
+          "explorer": "https://testnet-explorer.skale.space"
+        }
+      },
+      "polygon": {
+        "mainnet": {
+          "rpc": "https://polygon-rpc.com",
+          "explorer": "https://polygonscan.com",
+          "api": "https://api.polygonscan.com/api"
+        },
+        "mumbai": {
+          "rpc": "https://mumbai.polygon-rpc.com",
+          "explorer": "https://mumbai.polygonscan.com",
+          "api": "https://api-mumbai.polygonscan.com/api"
+        }
+      },
+      "arbitrum": {
+        "mainnet": {
+          "rpc": "https://arb1.arbitrum.io/rpc",
+          "explorer": "https://arbiscan.io",
+          "api": "https://api.arbiscan.io/api"
+        },
+        "goerli": {
+          "rpc": "https://goerli-rollup.arbitrum.io/rpc",
+          "explorer": "https://goerli.arbiscan.io",
+          "api": "https://api-goerli.arbiscan.io/api"
+        }
+      },
+      "optimism": {
+        "mainnet": {
+          "rpc": "https://mainnet.optimism.io",
+          "explorer": "https://optimistic.etherscan.io",
+          "api": "https://api-optimistic.etherscan.io/api"
+        },
+        "goerli": {
+          "rpc": "https://goerli.optimism.io",
+          "explorer": "https://goerli-optimism.etherscan.io",
+          "api": "https://api-goerli-optimism.etherscan.io/api"
+        }
+      }
+    },
+
+    "social": {
+      "twitter": {
+        "api": "https://api.twitter.com/2",
+        "upload": "https://upload.twitter.com/1.1",
+        "auth": "https://api.twitter.com/oauth2/token",
+        "web": "https://twitter.com"
+      },
+      "reddit": {
+        "api": "https://oauth.reddit.com",
+        "auth": "https://www.reddit.com/api/v1/access_token",
+        "web": "https://www.reddit.com"
+      },
+      "instagram": {
+        "api": "https://graph.instagram.com",
+        "upload": "https://api.instagram.com/v1",
+        "auth": "https://api.instagram.com/oauth/access_token",
+        "web": "https://www.instagram.com"
+      },
+      "facebook": {
+        "api": "https://graph.facebook.com/v18.0",
+        "auth": "https://graph.facebook.com/v18.0/oauth/access_token",
+        "web": "https://www.facebook.com"
+      },
+      "youtube": {
+        "api": "https://www.googleapis.com/youtube/v3",
+        "upload": "https://www.googleapis.com/upload/youtube/v3",
+        "auth": "https://oauth2.googleapis.com/token",
+        "web": "https://www.youtube.com"
+      },
+      "tiktok": {
+        "api": "https://open-api.tiktok.com",
+        "upload": "https://open-api.tiktok.com/share/video/upload",
+        "auth": "https://open-api.tiktok.com/oauth/access_token",
+        "web": "https://www.tiktok.com"
+      },
+      "snapchat": {
+        "api": "https://api.snapchat.com",
+        "auth": "https://api.snapchat.com/oauth2/access_token",
+        "web": "https://www.snapchat.com"
+      },
+      "quora": {
+        "api": "https://www.quora.com/api/v1",
+        "web": "https://www.quora.com"
+      },
+      "meetme": {
+        "api": "https://api.meetme.com/v1",
+        "auth": "https://api.meetme.com/oauth/access_token",
+        "web": "https://www.meetme.com"
+      },
+      "younow": {
+        "api": "https://api.younow.com/v1",
+        "auth": "https://api.younow.com/oauth/access_token",
+        "web": "https://www.younow.com"
+      },
+      "tango": {
+        "api": "https://api.tango.me/v1",
+        "auth": "https://api.tango.me/oauth/access_token",
+        "web": "https://www.tango.me"
+      },
+      "chaturbate": {
+        "api": "https://api.chaturbate.com/v1",
+        "auth": "https://api.chaturbate.com/oauth/access_token",
+        "web": "https://chaturbate.com"
+      },
+      "rumble": {
+        "api": "https://api.rumble.com/v1",
+        "upload": "https://api.rumble.com/v1/upload",
+        "auth": "https://api.rumble.com/oauth/access_token",
+        "web": "https://rumble.com"
+      }
+    },
+
+    "messaging": {
+      "messenger": {
+        "api": "https://graph.facebook.com/v18.0/me/messages",
+        "web": "https://www.messenger.com"
+      },
+      "googleChat": {
+        "api": "https://chat.googleapis.com/v1",
+        "web": "https://chat.google.com"
+      },
+      "gmail": {
+        "api": "https://gmail.googleapis.com/gmail/v1",
+        "auth": "https://oauth2.googleapis.com/token",
+        "web": "https://mail.google.com"
+      },
+      "yahoo": {
+        "api": "https://mail.yahoo.com/api/v1",
+        "auth": "https://api.login.yahoo.com/oauth2/token",
+        "web": "https://mail.yahoo.com"
+      },
+      "hotmail": {
+        "api": "https://graph.microsoft.com/v1.0/me/messages",
+        "auth": "https://login.microsoftonline.com/common/oauth2/token",
+        "web": "https://outlook.live.com"
+      },
+      "outlook": {
+        "api": "https://graph.microsoft.com/v1.0/me/messages",
+        "auth": "https://login.microsoftonline.com/common/oauth2/token",
+        "web": "https://outlook.office.com"
+      }
+    },
+
+    "payment": {
+      "cashapp": {
+        "api": "https://api.cash.app/v1",
+        "auth": "https://api.cash.app/oauth/access_token",
+        "web": "https://cash.app",
+        "checkout": "https://cash.app/checkout"
+      },
+      "paypal": {
+        "api": "https://api-m.sandbox.paypal.com/v1",
+        "auth": "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+        "web": "https://www.paypal.com",
+        "checkout": "https://www.paypal.com/checkoutnow"
+      },
+      "clickbank": {
+        "api": "https://api.clickbank.com/v2",
+        "auth": "https://api.clickbank.com/oauth/access_token",
+        "web": "https://www.clickbank.com",
+        "checkout": "https://www.clickbank.com/order"
+      },
+      "stripe": {
+        "api": "https://api.stripe.com/v1",
+        "auth": "https://connect.stripe.com/oauth/token",
+        "web": "https://stripe.com",
+        "checkout": "https://checkout.stripe.com"
+      },
+      "square": {
+        "api": "https://connect.squareup.com/v2",
+        "auth": "https://connect.squareup.com/oauth2/authorize",
+        "web": "https://squareup.com",
+        "checkout": "https://squareup.com/checkout"
+      },
+      "venmo": {
+        "api": "https://api.venmo.com/v1",
+        "auth": "https://api.venmo.com/oauth/access_token",
+        "web": "https://venmo.com"
+      },
+      "zelle": {
+        "api": "https://api.zellepay.com/v1",
+        "auth": "https://api.zellepay.com/oauth/access_token",
+        "web": "https://www.zellepay.com"
+      }
+    },
+
+    "storage": {
+      "infura": {
+        "ipfs": "https://ipfs.infura.io:5001/api/v0",
+        "http": "https://infura.io",
+        "auth": "https://infura.io/oauth/access_token"
+      },
+      "github": {
+        "api": "https://api.github.com",
+        "auth": "https://github.com/login/oauth/access_token",
+        "web": "https://github.com",
+        "raw": "https://raw.githubusercontent.com"
+      },
+      "ftp": {
+        "default": "ftp://",
+        "secure": "ftps://",
+        "ssh": "sftp://"
+      },
+      "ipfs": {
+        "gateway": "https://ipfs.io/ipfs/",
+        "api": "https://ipfs.io/api/v0",
+        "pinata": "https://api.pinata.cloud/pinning"
+      },
+      "arweave": {
+        "api": "https://api.arweave.net",
+        "gateway": "https://arweave.net"
+      },
+      "filecoin": {
+        "api": "https://api.filecoin.io/v1",
+        "gateway": "https://filecoin.io"
+      }
+    },
+
+    "archive": {
+      "waybackMachine": {
+        "api": "https://archive.org/wayback/available",
+        "web": "https://archive.org",
+        "save": "https://web.archive.org/save"
+      },
+      "internetArchive": {
+        "api": "https://archive.org/services/search/v1",
+        "web": "https://archive.org",
+        "upload": "https://archive.org/upload"
+      }
+    },
+
+    "development": {
+      "local": {
+        "server": "http://localhost:3000",
+        "api": "http://localhost:3000/api",
+        "ws": "ws://localhost:3000"
+      },
+      "http": {
+        "default": "http://",
+        "port": 80
+      },
+      "https": {
+        "default": "https://",
+        "port": 443
+      },
+      "ftp": {
+        "default": "ftp://",
+        "secure": "ftps://",
+        "ssh": "sftp://"
+      },
+      "file": {
+        "protocol": "file://",
+        "local": "file:///"
+      }
+    },
+
+    "codeAnalysis": {
+      "snippet": {
+        "api": "https://api.snippet.org/v1",
+        "analyze": "https://api.snippet.org/v1/analyze",
+        "parse": "https://api.snippet.org/v1/parse"
+      },
+      "pastebin": {
+        "api": "https://pastebin.com/api",
+        "web": "https://pastebin.com",
+        "raw": "https://pastebin.com/raw"
+      },
+      "gist": {
+        "api": "https://api.github.com/gists",
+        "web": "https://gist.github.com",
+        "raw": "https://gist.githubusercontent.com"
+      },
+      "codepen": {
+        "api": "https://codepen.io/api/v1",
+        "web": "https://codepen.io"
+      },
+      "jsfiddle": {
+        "api": "https://jsfiddle.net/api",
+        "web": "https://jsfiddle.net"
+      },
+      "replit": {
+        "api": "https://api.replit.com/v1",
+        "web": "https://replit.com"
+      },
+      "codesandbox": {
+        "api": "https://codesandbox.io/api/v1",
+        "web": "https://codesandbox.io"
+      },
+      "stackblitz": {
+        "api": "https://stackblitz.com/api/v1",
+        "web": "https://stackblitz.com"
+      },
+      "glitch": {
+        "api": "https://api.glitch.com/v1",
+        "web": "https://glitch.com"
+      }
+    },
+
+    "ide": {
+      "vscode": {
+        "api": "https://api.vscode.dev/v1",
+        "web": "https://vscode.dev"
+      },
+      "githubCodespaces": {
+        "api": "https://api.github.com/codespaces",
+        "web": "https://github.com/codespaces"
+      },
+      "gitpod": {
+        "api": "https://api.gitpod.io/v1",
+        "web": "https://gitpod.io"
+      },
+      "codio": {
+        "api": "https://api.codio.com/v1",
+        "web": "https://codio.com"
+      },
+      "c9": {
+        "api": "https://api.c9.io/v1",
+        "web": "https://c9.io"
+      },
+      "mySpaceRemix": {
+        "api": "https://api.myspace.com/remix/v1",
+        "web": "https://myspace.com/remix",
+        "ide": "https://myspace.com/remix/ide"
+      },
+      "remix": {
+        "api": "https://remix-api.ethereum.org",
+        "web": "https://remix.ethereum.org",
+        "ide": "https://remix.ethereum.org"
+      },
+      "hardhat": {
+        "api": "https://api.hardhat.org/v1",
+        "web": "https://hardhat.org"
+      },
+      "truffle": {
+        "api": "https://api.trufflesuite.com/v1",
+        "web": "https://trufflesuite.com"
+      },
+      "foundry": {
+        "api": "https://api.foundry.xyz/v1",
+        "web": "https://foundry.xyz"
+      },
+      "brownie": {
+        "api": "https://api.brownie.io/v1",
+        "web": "https://brownie.io"
+      }
+    },
+
+    "wiki": {
+      "wikipedia": {
+        "api": "https://en.wikipedia.org/api/rest_v1",
+        "web": "https://en.wikipedia.org"
+      },
+      "wikidata": {
+        "api": "https://www.wikidata.org/w/api.php",
+        "web": "https://www.wikidata.org"
+      },
+      "wikihow": {
+        "api": "https://www.wikihow.com/api/v1",
+        "web": "https://www.wikihow.com"
+      }
+    },
+
+    "learning": {
+      "stackoverflow": {
+        "api": "https://api.stackexchange.com/2.3",
+        "web": "https://stackoverflow.com"
+      },
+      "devto": {
+        "api": "https://dev.to/api",
+        "web": "https://dev.to"
+      },
+      "medium": {
+        "api": "https://api.medium.com/v1",
+        "web": "https://medium.com"
+      },
+      "hackernews": {
+        "api": "https://hacker-news.firebaseio.com/v0",
+        "web": "https://news.ycombinator.com"
+      },
+      "github": {
+        "api": "https://api.github.com",
+        "web": "https://github.com"
+      },
+      "gitlab": {
+        "api": "https://gitlab.com/api/v4",
+        "web": "https://gitlab.com"
+      },
+      "bitbucket": {
+        "api": "https://api.bitbucket.org/2.0",
+        "web": "https://bitbucket.org"
+      }
+    },
+
+    "codeSearch": {
+      "sourcegraph": {
+        "api": "https://sourcegraph.com/api/v1",
+        "web": "https://sourcegraph.com"
+      },
+      "searchcode": {
+        "api": "https://searchcode.com/api",
+        "web": "https://searchcode.com"
+      },
+      "grepapp": {
+        "api": "https://api.grep.app/v1",
+        "web": "https://grep.app"
+      },
+      "codota": {
+        "api": "https://api.codota.com/v1",
+        "web": "https://codota.com"
+      }
+    },
+
+    "documentation": {
+      "mdn": {
+        "api": "https://developer.mozilla.org/api/v1",
+        "web": "https://developer.mozilla.org"
+      },
+      "devdocs": {
+        "api": "https://devdocs.io/api/v1",
+        "web": "https://devdocs.io"
+      },
+      "readthedocs": {
+        "api": "https://readthedocs.org/api/v3",
+        "web": "https://readthedocs.org"
+      }
+    },
+
+    "testing": {
+      "jest": {
+        "api": "https://api.jestjs.io/v1",
+        "web": "https://jestjs.io"
+      },
+      "mocha": {
+        "api": "https://api.mochajs.org/v1",
+        "web": "https://mochajs.org"
+      },
+      "chai": {
+        "api": "https://api.chaijs.com/v1",
+        "web": "https://chaijs.com"
+      }
+    }
+  },
+
+  "integration": {
+    "analyze": {
+      "snippet": {
+        "url": "https://api.snippet.org/v1/analyze",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        }
+      },
+      "pastebin": {
+        "url": "https://pastebin.com/api/api_post.php",
+        "method": "POST"
+      },
+      "gist": {
+        "url": "https://api.github.com/gists",
+        "method": "POST",
+        "headers": {
+          "Accept": "application/vnd.github.v3+json"
+        }
+      },
+      "github": {
+        "url": "https://api.github.com/repos/{owner}/{repo}/contents/{path}",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/vnd.github.v3+json"
+        }
+      },
+      "gitlab": {
+        "url": "https://gitlab.com/api/v4/projects/{id}/repository/files/{path}",
+        "method": "GET"
+      },
+      "bitbucket": {
+        "url": "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo}/src/{commit}/{path}",
+        "method": "GET"
+      }
+    },
+    "deploy": {
+      "remix": {
+        "url": "https://remix-api.ethereum.org/deploy",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "hardhat": {
+        "url": "https://api.hardhat.org/v1/deploy",
+        "method": "POST"
+      },
+      "truffle": {
+        "url": "https://api.trufflesuite.com/v1/deploy",
+        "method": "POST"
+      }
+    },
+    "verify": {
+      "etherscan": {
+        "url": "https://api.etherscan.io/api",
+        "method": "GET",
+        "params": {
+          "module": "contract",
+          "action": "verifysourcecode"
+        }
+      },
+      "polygonscan": {
+        "url": "https://api.polygonscan.com/api",
+        "method": "GET",
+        "params": {
+          "module": "contract",
+          "action": "verifysourcecode"
+        }
+      },
+      "arbiscan": {
+        "url": "https://api.arbiscan.io/api",
+        "method": "GET",
+        "params": {
+          "module": "contract",
+          "action": "verifysourcecode"
+        }
+      }
+    }
+  }
+}
