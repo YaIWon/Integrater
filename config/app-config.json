@@ -1,0 +1,303 @@
+{
+  "app": {
+    "name": "Universal Integrator Pro",
+    "version": "4.0.0",
+    "description": "Enterprise-grade universal file integration system with Solidity support",
+    "author": "SonicForge Industries",
+    "license": "MIT",
+    "repository": "https://github.com/sonicforge/universal-integrator"
+  },
+
+  "server": {
+    "port": 3000,
+    "host": "0.0.0.0",
+    "environment": "production",
+    "cors": {
+      "enabled": true,
+      "origin": "*",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "allowedHeaders": ["Content-Type", "Authorization"]
+    },
+    "rateLimiting": {
+      "enabled": true,
+      "windowMs": 900000,
+      "maxRequests": 100
+    }
+  },
+
+  "fileTypes": {
+    "maxSize": 1073741824,
+    "maxFiles": 500,
+    "allowedExtensions": [
+      "html", "htm", "xhtml", "css", "scss", "sass", "less",
+      "js", "jsx", "ts", "tsx", "json", "json5", "yml", "yaml",
+      "toml", "xml", "xsd", "xsl", "xslt",
+      "py", "pyc", "pyo", "rb", "go", "rs", "rslib",
+      "c", "cpp", "cxx", "h", "hpp", "java", "class", "jar",
+      "kt", "kts", "swift", "php", "php3", "php4", "php5", "php7", "phar",
+      "lua", "pl", "pm", "tcl",
+      "sol", "vyper", "yul", "abi", "bin", "evm", "wasm", "wast",
+      "exe", "msi", "app", "deb", "rpm", "pkg", "dmg", "apk", "ipa", "xapk",
+      "crx", "nexe", "elf", "out", "o", "obj", "lib", "a", "so", "dylib", "dll", "sys", "drv",
+      "zip", "rar", "7z", "tar", "gz", "bz2", "xz", "zst", "lz4", "lzma",
+      "tgz", "tbz", "txz", "zipx", "sitx", "arj", "zoo", "lzh",
+      "iso", "img", "bin", "cue", "nrg", "mdf", "mds",
+      "pdf", "doc", "docx", "dot", "dotx", "odt", "ott", "rtf",
+      "txt", "log", "md", "markdown", "tex", "latex", "aux", "sty", "cls", "bib", "bst",
+      "xls", "xlsx", "xlsm", "xlsb", "ods", "ots",
+      "csv", "tsv", "psv", "tab", "data", "dat",
+      "db", "sqlite", "db3", "accdb", "mdb", "fdb", "sql",
+      "ppt", "pptx", "pps", "ppsx", "odp", "otp", "key", "theme",
+      "jpg", "jpeg", "jfif", "png", "gif", "bmp", "tiff", "tif",
+      "webp", "avif", "heif", "heic", "ico", "cur",
+      "svg", "svgz", "psd", "ai", "eps",
+      "raw", "cr2", "nef", "arw", "dng", "orf", "raf",
+      "mp3", "mp2", "wav", "flac", "alac", "aac", "ogg", "opus",
+      "m4a", "m4b", "aiff", "aif", "wma", "amr", "ac3", "dts",
+      "mid", "midi", "kar",
+      "mp4", "m4v", "avi", "mov", "qt", "wmv", "asf",
+      "flv", "f4v", "rm", "rmvb", "webm", "mkv", "mxf",
+      "ogv", "ogm", "3gp", "3g2", "ts", "m2ts", "mts", "vob",
+      "dwg", "dxf", "dwf", "iges", "igs", "step", "stp",
+      "stl", "obj", "3ds", "fbx", "blend", "skp", "glb", "gltf", "usd", "usdz",
+      "ttf", "otf", "woff", "woff2", "eot", "dfont",
+      "epub", "mobi", "azw", "azw3", "fb2", "djvu", "lit", "prc",
+      "shp", "shx", "dbf", "prj", "qix", "kml", "kmz", "gpx", "geojson", "topojson",
+      "conf", "config", "cfg", "ini", "properties", "env", "reg", "plist", "manifest", "lock",
+      "ipynb", "r", "rdata", "rds", "rmd", "stan", "jl", "m", "mat", "nb", "model",
+      "rom", "nes", "snes", "n64", "iso", "cso", "elf", "nds", "gba", "gbc", "gb",
+      "psx", "ps2", "psp", "wbfs", "ciso",
+      "pem", "key", "crt", "csr", "p12", "pfx", "jks", "keystore",
+      "asc", "pgp", "gpg", "ssh", "rsa",
+      "ova", "ovf", "vmdk", "vhd", "vhdx", "raw", "qcow2", "img", "vdi"
+    ],
+    "supportedCategories": {
+      "web": ["html", "htm", "xhtml", "css", "scss", "sass", "less"],
+      "code": ["js", "jsx", "ts", "tsx", "py", "rb", "go", "rs", "c", "cpp", "java", "php", "lua", "pl", "tcl"],
+      "blockchain": ["sol", "vyper", "yul", "abi", "bin", "evm", "wasm", "wast"],
+      "executable": ["exe", "msi", "app", "deb", "rpm", "pkg", "apk", "ipa", "elf"],
+      "binary": ["dll", "so", "dylib", "lib", "a", "sys", "drv", "o", "obj"],
+      "archive": ["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "zst", "lz4", "lzma"],
+      "document": ["pdf", "doc", "docx", "odt", "rtf", "txt", "md", "tex"],
+      "spreadsheet": ["xls", "xlsx", "ods", "csv", "tsv"],
+      "database": ["db", "sqlite", "db3", "accdb", "mdb", "sql"],
+      "presentation": ["ppt", "pptx", "key"],
+      "image": ["jpg", "jpeg", "png", "gif", "webp", "svg", "psd", "raw"],
+      "audio": ["mp3", "wav", "flac", "aac", "ogg", "opus", "m4a", "wma"],
+      "video": ["mp4", "avi", "mov", "wmv", "flv", "webm", "mkv", "3gp"],
+      "3d": ["stl", "obj", "fbx", "blend", "glb", "gltf"],
+      "cad": ["dwg", "dxf", "step", "stp", "iges"],
+      "font": ["ttf", "otf", "woff", "woff2", "eot"],
+      "ebook": ["epub", "mobi", "azw", "fb2", "djvu"],
+      "gis": ["shp", "shx", "dbf", "prj", "kml", "kmz", "gpx", "geojson"],
+      "config": ["conf", "config", "cfg", "ini", "properties", "env", "plist"],
+      "security": ["pem", "key", "crt", "pfx", "jks", "pgp"],
+      "virtual-machine": ["ova", "ovf", "vmdk", "vhd", "vhdx", "qcow2", "vdi"],
+      "game": ["rom", "nes", "snes", "n64", "gba", "psx", "psp"],
+      "notebook": ["ipynb", "nb"],
+      "webassembly": ["wasm", "wast"],
+      "voice": ["voice", "vcfg"]
+    }
+  },
+
+  "features": {
+    "solidity": {
+      "enabled": true,
+      "autoDeploy": false,
+      "verifyContracts": true,
+      "supportedNetworks": ["mainnet", "goerli", "sepolia", "polygon", "arbitrum", "optimism"],
+      "defaultNetwork": "mainnet",
+      "compilerVersion": "0.8.19",
+      "optimizationRuns": 200
+    },
+    "aiAnalysis": {
+      "enabled": false,
+      "provider": "openai",
+      "model": "gpt-4",
+      "apiKey": null
+    },
+    "virusScan": {
+      "enabled": true,
+      "maxFileSize": 104857600,
+      "scanTimeout": 30000
+    },
+    "autoAnalyze": {
+      "enabled": true,
+      "delay": 500
+    },
+    "export": {
+      "enabled": true,
+      "formats": ["json", "csv", "pdf"]
+    }
+  },
+
+  "ui": {
+    "theme": "dark",
+    "animations": true,
+    "notifications": true,
+    "autoAnalyze": true,
+    "sidebar": {
+      "collapsed": false,
+      "position": "left"
+    },
+    "grid": {
+      "defaultColumns": 3,
+      "defaultGap": 16,
+      "responsive": true
+    }
+  },
+
+  "logging": {
+    "level": "info",
+    "file": "./logs/app.log",
+    "maxSize": 10485760,
+    "maxFiles": 5,
+    "pretty": true,
+    "format": "json"
+  },
+
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "maxSize": 100,
+    "storage": "memory"
+  },
+
+  "security": {
+    "jwt": {
+      "enabled": false,
+      "secret": null,
+      "expiry": "7d"
+    },
+    "csrf": {
+      "enabled": true,
+      "secret": null
+    },
+    "helmet": {
+      "enabled": true,
+      "hsts": true,
+      "noSniff": true,
+      "xssFilter": true
+    },
+    "cors": {
+      "enabled": true,
+      "origin": "*"
+    }
+  },
+
+  "api": {
+    "baseUrl": "/api",
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "endpoints": {
+      "health": "/health",
+      "upload": "/upload",
+      "analyze": "/analyze",
+      "integrate": "/integrate",
+      "solidity": {
+        "analyze": "/solidity/analyze",
+        "deploy": "/solidity/deploy",
+        "verify": "/solidity/verify",
+        "compile": "/solidity/compile"
+      },
+      "modules": "/modules",
+      "integrations": "/integrations",
+      "supportedTypes": "/supported-types",
+      "metrics": "/metrics"
+    }
+  },
+
+  "storage": {
+    "uploadDir": "./uploads",
+    "tempDir": "./temp",
+    "dataDir": "./data",
+    "cacheDir": "./data/cache",
+    "logsDir": "./logs"
+  },
+
+  "integrations": {
+    "etherscan": {
+      "enabled": true,
+      "apiKey": null,
+      "baseUrl": "https://api.etherscan.io/api"
+    },
+    "ipfs": {
+      "enabled": false,
+      "gateway": "https://ipfs.io",
+      "pinata": {
+        "enabled": false,
+        "apiKey": null,
+        "apiSecret": null
+      }
+    },
+    "github": {
+      "enabled": false,
+      "token": null
+    }
+  },
+
+  "handlers": {
+    "html": {
+      "enabled": true,
+      "validateAccessibility": true,
+      "validateSEO": true
+    },
+    "css": {
+      "enabled": true,
+      "validateProperties": true,
+      "validateSelectors": true
+    },
+    "js": {
+      "enabled": true,
+      "validateSyntax": true,
+      "validateDependencies": true
+    },
+    "json": {
+      "enabled": true,
+      "validateSchema": false,
+      "maxDepth": 10
+    },
+    "python": {
+      "enabled": true,
+      "validatePep8": true,
+      "validateTypeHints": true
+    },
+    "solidity": {
+      "enabled": true,
+      "validateSecurity": true,
+      "validateGas": true,
+      "validateVersion": true
+    },
+    "archive": {
+      "enabled": true,
+      "validateIntegrity": true,
+      "maxExtractSize": 1073741824
+    },
+    "binary": {
+      "enabled": true,
+      "validateType": true,
+      "validateSecurity": true
+    },
+    "voice": {
+      "enabled": true,
+      "validateVoiceMap": true,
+      "validatePatterns": true
+    }
+  },
+
+  "defaults": {
+    "analysis": {
+      "complexityThresholds": {
+        "simple": 30,
+        "medium": 60,
+        "complex": 80,
+        "veryComplex": 90
+      }
+    },
+    "score": {
+      "passingThreshold": 70,
+      "warningThreshold": 50
+    }
+  }
+}
