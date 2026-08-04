@@ -1,0 +1,332 @@
+{
+  "version": "1.0.0",
+  "description": "Handler registry for Universal Integrator Pro",
+  "handlers": {
+    "html": {
+      "id": "html-handler",
+      "file": "js/handlers/html-handler.js",
+      "class": "HTMLHandler",
+      "enabled": true,
+      "priority": 100,
+      "extensions": ["html", "htm", "xhtml"],
+      "mimeTypes": ["text/html", "application/xhtml+xml"],
+      "description": "HTML file handler with full parsing and analysis",
+      "features": {
+        "structure": true,
+        "meta": true,
+        "elements": true,
+        "attributes": true,
+        "accessibility": true,
+        "seo": true,
+        "performance": true,
+        "security": true
+      },
+      "config": {
+        "validateAccessibility": true,
+        "validateSEO": true,
+        "validateStructure": true,
+        "validatePerformance": true,
+        "validateSecurity": true
+      }
+    },
+
+    "css": {
+      "id": "css-handler",
+      "file": "js/handlers/css-handler.js",
+      "class": "CSSHandler",
+      "enabled": true,
+      "priority": 90,
+      "extensions": ["css", "scss", "sass", "less"],
+      "mimeTypes": ["text/css"],
+      "description": "CSS file handler with full parsing and analysis",
+      "features": {
+        "structure": true,
+        "selectors": true,
+        "properties": true,
+        "values": true,
+        "atRules": true,
+        "features": true,
+        "quality": true,
+        "performance": true,
+        "prefixes": true,
+        "responsive": true,
+        "accessibility": true
+      },
+      "config": {
+        "validateProperties": true,
+        "validateSelectors": true,
+        "validateValues": true,
+        "validatePerformance": true,
+        "validateAccessibility": true,
+        "maxFileSize": 1048576
+      }
+    },
+
+    "javascript": {
+      "id": "js-handler",
+      "file": "js/handlers/js-handler.js",
+      "class": "JSHandler",
+      "enabled": true,
+      "priority": 95,
+      "extensions": ["js", "jsx", "ts", "tsx", "mjs"],
+      "mimeTypes": ["application/javascript", "text/javascript", "application/typescript"],
+      "description": "JavaScript/TypeScript file handler with full parsing and analysis",
+      "features": {
+        "structure": true,
+        "variables": true,
+        "functions": true,
+        "classes": true,
+        "imports": true,
+        "exports": true,
+        "controlFlow": true,
+        "patterns": true,
+        "quality": true,
+        "dependencies": true,
+        "frameworks": true,
+        "security": true
+      },
+      "config": {
+        "validateSyntax": true,
+        "validateDependencies": true,
+        "validateSecurity": true,
+        "validateQuality": true,
+        "validateFrameworks": true,
+        "maxFileSize": 10485760
+      }
+    },
+
+    "json": {
+      "id": "json-handler",
+      "file": "js/handlers/json-handler.js",
+      "class": "JSONHandler",
+      "enabled": true,
+      "priority": 85,
+      "extensions": ["json", "json5", "jsonl"],
+      "mimeTypes": ["application/json", "application/x-json"],
+      "description": "JSON file handler with full parsing and analysis",
+      "features": {
+        "validation": true,
+        "structure": true,
+        "dataTypes": true,
+        "properties": true,
+        "schema": true,
+        "quality": true,
+        "patterns": true,
+        "metadata": true
+      },
+      "config": {
+        "validateSchema": false,
+        "maxDepth": 10,
+        "maxSize": 10485760,
+        "allowComments": false,
+        "allowTrailingCommas": false
+      }
+    },
+
+    "python": {
+      "id": "python-handler",
+      "file": "js/handlers/python-handler.js",
+      "class": "PythonHandler",
+      "enabled": true,
+      "priority": 80,
+      "extensions": ["py", "pyc", "pyo"],
+      "mimeTypes": ["text/x-python", "application/x-python"],
+      "description": "Python file handler with full parsing and analysis",
+      "features": {
+        "structure": true,
+        "functions": true,
+        "classes": true,
+        "imports": true,
+        "quality": true,
+        "style": true,
+        "frameworks": true,
+        "libraries": true,
+        "complexity": true,
+        "security": true
+      },
+      "config": {
+        "validatePep8": true,
+        "validateTypeHints": true,
+        "validateDocstrings": true,
+        "validateSecurity": true,
+        "validateImports": true,
+        "maxFileSize": 10485760
+      }
+    },
+
+    "solidity": {
+      "id": "sol-handler",
+      "file": "js/handlers/sol-handler.js",
+      "class": "SolidityHandler",
+      "enabled": true,
+      "priority": 100,
+      "extensions": ["sol", "vyper", "yul"],
+      "mimeTypes": ["text/x-solidity", "application/x-solidity"],
+      "description": "Solidity smart contract handler with full analysis",
+      "features": {
+        "version": true,
+        "structure": true,
+        "contracts": true,
+        "functions": true,
+        "modifiers": true,
+        "events": true,
+        "structs": true,
+        "enums": true,
+        "mappings": true,
+        "stateVariables": true,
+        "imports": true,
+        "security": true,
+        "gasOptimization": true,
+        "quality": true,
+        "complexity": true
+      },
+      "config": {
+        "validateSecurity": true,
+        "validateGas": true,
+        "validateVersion": true,
+        "validateImports": true,
+        "validateQuality": true,
+        "maxFileSize": 10485760,
+        "compilerVersion": "0.8.19"
+      }
+    },
+
+    "archive": {
+      "id": "archive-handler",
+      "file": "js/handlers/archive-handler.js",
+      "class": "ArchiveHandler",
+      "enabled": true,
+      "priority": 70,
+      "extensions": ["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "zst", "lz4", "lzma", "tgz", "tbz", "txz"],
+      "mimeTypes": ["application/zip", "application/x-rar-compressed", "application/x-7z-compressed", "application/x-tar", "application/gzip", "application/x-bzip2", "application/x-xz"],
+      "description": "Archive file handler for compressed files",
+      "features": {
+        "structure": true,
+        "metadata": true,
+        "content": true,
+        "quality": true,
+        "security": true
+      },
+      "config": {
+        "validateIntegrity": true,
+        "maxExtractSize": 1073741824,
+        "maxFileCount": 10000,
+        "extractEnabled": true
+      }
+    },
+
+    "binary": {
+      "id": "binary-handler",
+      "file": "js/handlers/binary-handler.js",
+      "class": "BinaryHandler",
+      "enabled": true,
+      "priority": 60,
+      "extensions": ["exe", "dll", "so", "dylib", "lib", "a", "sys", "drv", "o", "obj", "bin", "wasm"],
+      "mimeTypes": ["application/octet-stream", "application/x-msdownload", "application/x-sharedlib"],
+      "description": "Binary file handler for executables and libraries",
+      "features": {
+        "detection": true,
+        "structure": true,
+        "entropy": true,
+        "strings": true,
+        "metadata": true,
+        "security": true
+      },
+      "config": {
+        "validateType": true,
+        "validateSecurity": true,
+        "maxFileSize": 104857600,
+        "scanForMalware": true
+      }
+    },
+
+    "voice": {
+      "id": "voice-handler",
+      "file": "js/handlers/voice-handler.js",
+      "class": "VoiceHandler",
+      "enabled": true,
+      "priority": 75,
+      "extensions": ["voice", "vcfg", "json"],
+      "mimeTypes": ["application/json", "text/plain"],
+      "description": "Voice configuration handler for TTS settings",
+      "features": {
+        "structure": true,
+        "voices": true,
+        "config": true,
+        "features": true,
+        "quality": true
+      },
+      "config": {
+        "validateVoiceMap": true,
+        "validatePatterns": true,
+        "validateProperties": true,
+        "maxFileSize": 1048576
+      }
+    }
+  },
+
+  "defaults": {
+    "handler": {
+      "enabled": true,
+      "priority": 50,
+      "validateOnLoad": true,
+      "cacheResults": true,
+      "timeout": 30000
+    },
+    "analysis": {
+      "includePreview": true,
+      "previewLength": 200,
+      "includeMetrics": true,
+      "includeScore": true
+    }
+  },
+
+  "priorityOrder": [
+    "solidity",
+    "html",
+    "javascript",
+    "css",
+    "json",
+    "python",
+    "voice",
+    "archive",
+    "binary"
+  ],
+
+  "extensions": {
+    "html": ["html", "htm", "xhtml"],
+    "css": ["css", "scss", "sass", "less"],
+    "javascript": ["js", "jsx", "ts", "tsx", "mjs"],
+    "json": ["json", "json5", "jsonl"],
+    "python": ["py", "pyc", "pyo"],
+    "solidity": ["sol", "vyper", "yul"],
+    "archive": ["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "zst", "lz4", "lzma", "tgz", "tbz", "txz"],
+    "binary": ["exe", "dll", "so", "dylib", "lib", "a", "sys", "drv", "o", "obj", "bin", "wasm"],
+    "voice": ["voice", "vcfg"],
+    "default": ["txt", "log", "md", "markdown", "rtf"]
+  },
+
+  "mimeTypes": {
+    "text/html": "html",
+    "text/css": "css",
+    "application/javascript": "javascript",
+    "text/javascript": "javascript",
+    "application/typescript": "javascript",
+    "application/json": "json",
+    "application/x-json": "json",
+    "text/x-python": "python",
+    "application/x-python": "python",
+    "text/x-solidity": "solidity",
+    "application/x-solidity": "solidity",
+    "application/zip": "archive",
+    "application/x-rar-compressed": "archive",
+    "application/x-7z-compressed": "archive",
+    "application/x-tar": "archive",
+    "application/gzip": "archive",
+    "application/x-bzip2": "archive",
+    "application/x-xz": "archive",
+    "application/octet-stream": "binary",
+    "application/x-msdownload": "binary",
+    "application/x-sharedlib": "binary"
+  }
+}
