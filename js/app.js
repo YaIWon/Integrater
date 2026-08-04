@@ -1,6 +1,6 @@
 // ============================================
 // UNIVERSAL INTEGRATOR PRO - MAIN APP
-// The Most Advanced File Integration System
+// Complete with GitHub, API, and Import Features
 // ============================================
 
 import FileAnalyzer from './core/analyzer.js';
@@ -17,9 +17,7 @@ import Validators from './utils/validators.js';
 
 class App {
     constructor() {
-        // ==========================================
-        // CORE COMPONENTS
-        // ==========================================
+        // Core components
         this.files = [];
         this.integrations = [];
         this.modules = [];
@@ -31,8 +29,10 @@ class App {
         this.uploading = false;
         this.analyzing = false;
         this.startTime = Date.now();
+        this.importedRepos = [];
+        this.generatedMethods = [];
 
-        // Initialize all modules
+        // Initialize modules
         this.analyzer = new FileAnalyzer();
         this.integrator = new Integrator();
         this.apiVerifier = new APIVerifier();
@@ -42,9 +42,7 @@ class App {
         this.modalManager = new ModalManager();
         this.statusManager = new StatusManager();
 
-        // ==========================================
-        // DOM REFS
-        // ==========================================
+        // DOM refs
         this.dom = {
             app: document.getElementById('app'),
             fileList: document.getElementById('fileList'),
@@ -60,21 +58,27 @@ class App {
             totalApiCalls: document.getElementById('totalApiCalls'),
             totalContracts: document.getElementById('totalContracts'),
             uptime: document.getElementById('uptime'),
-            statusText: document.getElementById('statusText'),
-            statusDot: document.getElementById('statusDot'),
             dropZone: document.getElementById('dropZone'),
             uploadProgress: document.getElementById('uploadProgress'),
             progressFill: document.querySelector('.progress-fill'),
             progressText: document.querySelector('.progress-text'),
-            importStatus: document.getElementById('importStatus'),
-            loadedModules: document.getElementById('loadedModules'),
-            extensionCount: document.getElementById('extensionCount'),
-            keyCount: document.getElementById('keyCount'),
-            moduleList: document.getElementById('moduleList'),
             apiResponse: document.getElementById('apiResponse'),
             apiEndpoint: document.getElementById('apiEndpoint'),
             apiMethod: document.getElementById('apiMethod'),
-            modalContainer: document.getElementById('modalContainer')
+            modalContainer: document.getElementById('modalContainer'),
+            importModal: document.getElementById('importModal'),
+            githubUrlInput: document.getElementById('githubUrlInput'),
+            githubStatus: document.getElementById('githubStatus'),
+            githubTree: document.getElementById('githubTree'),
+            githubImportAllBtn: document.getElementById('githubImportAllBtn'),
+            githubSelectImportBtn: document.getElementById('githubSelectImportBtn'),
+            methodPreview: document.getElementById('methodPreview'),
+            functionBuilder: document.getElementById('functionBuilder'),
+            progressOverlay: document.getElementById('progressOverlay'),
+            progressTitle: document.getElementById('progressTitle'),
+            progressMessage: document.getElementById('progressMessage'),
+            progressFillOverlay: document.getElementById('progressFill'),
+            progressPercent: document.getElementById('progressPercent')
         };
     }
 
@@ -85,32 +89,20 @@ class App {
         console.log('🔮 Universal Integrator Pro v4.0');
         console.log('📁 Initializing...');
 
-        // Setup all event listeners
         this.setupEventListeners();
         this.setupDropZone();
+        this.setupImportModal();
         this.setupKeyboardShortcuts();
-        
-        // Load saved state
         await this.loadState();
-        
-        // Initialize UI
         this.updateUI();
         this.updateFileList();
         this.renderIntegrations();
         this.renderModules();
         this.renderSolidityContracts();
         this.startUptimeCounter();
-        
-        // Check for updates
-        this.checkForUpdates();
-        
+
         console.log('✅ Universal Integrator initialized successfully');
         console.log(`📁 Supported file types: ${this.getSupportedExtensions().length}+`);
-        console.log(`🧩 Modules loaded: ${this.modules.length}`);
-        console.log(`🔗 Integrations: ${this.integrations.length}`);
-        console.log(`📄 Files in queue: ${this.files.length}`);
-        
-        // Show welcome notification
         this.statusManager.success('🚀 Universal Integrator Pro is ready!');
     }
 
@@ -118,16 +110,12 @@ class App {
     // EVENT LISTENERS
     // ==========================================
     setupEventListeners() {
-        // ==========================================
-        // TAB SWITCHING
-        // ==========================================
+        // Tab switching
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
         });
 
-        // ==========================================
-        // FILE UPLOAD
-        // ==========================================
+        // File upload
         document.getElementById('fileBtn')?.addEventListener('click', () => {
             const input = document.createElement('input');
             input.type = 'file';
@@ -146,125 +134,548 @@ class App {
             input.click();
         });
 
-        // ==========================================
-        // ANALYSIS & INTEGRATION
-        // ==========================================
+        // Import buttons
+        document.getElementById('importBtn')?.addEventListener('click', () => this.showImportModal());
+        document.getElementById('importBtnQuick')?.addEventListener('click', () => this.showImportModal());
+
+        // Analysis buttons
         document.getElementById('analyzeBtn')?.addEventListener('click', () => this.analyzeFiles());
         document.getElementById('verifyBtn')?.addEventListener('click', () => this.verifyWithAPI());
         document.getElementById('integrateBtn')?.addEventListener('click', () => this.integrateFiles());
-        document.getElementById('exportAnalysisBtn')?.addEventListener('click', () => this.exportAnalysis());
 
-        // ==========================================
-        // THEME & CLEAR
-        // ==========================================
+        // Theme & clear
         document.getElementById('themeToggle')?.addEventListener('click', () => this.toggleTheme());
         document.getElementById('clearAllBtn')?.addEventListener('click', () => this.clearAll());
-        document.getElementById('exportBtn')?.addEventListener('click', () => this.exportData());
 
-        // ==========================================
-        // INTEGRATIONS & MODULES
-        // ==========================================
+        // Integrations & modules
         document.getElementById('newIntegrationBtn')?.addEventListener('click', () => this.showIntegrationModal());
         document.getElementById('installModuleBtn')?.addEventListener('click', () => this.showModuleModal());
-        document.getElementById('exportIntegrationsBtn')?.addEventListener('click', () => this.exportIntegrations());
 
-        // ==========================================
         // API
-        // ==========================================
         document.getElementById('testApiBtn')?.addEventListener('click', () => this.testAPI());
         document.getElementById('saveApiBtn')?.addEventListener('click', () => this.saveAPI());
 
-        // ==========================================
-        // SOLIDITY
-        // ==========================================
+        // Solidity
         document.getElementById('deployContractBtn')?.addEventListener('click', () => this.deployContract());
         document.getElementById('verifyContractBtn')?.addEventListener('click', () => this.verifyContract());
         document.getElementById('compileContractBtn')?.addEventListener('click', () => this.compileContract());
 
-        // ==========================================
-        // SETTINGS
-        // ==========================================
+        // Settings
         document.getElementById('settingsBtn')?.addEventListener('click', () => this.showSettings());
+        
+        // GitHub Import All
+        document.getElementById('githubImportAllBtn')?.addEventListener('click', () => this.importAllGitHubFiles());
+        
+        // Function Builder
+        document.getElementById('copyMethodsBtn')?.addEventListener('click', () => this.copyMethods());
+        document.getElementById('exportMethodsBtn')?.addEventListener('click', () => this.exportMethods());
+        document.getElementById('saveMethodsBtn')?.addEventListener('click', () => this.saveMethods());
     }
 
     // ==========================================
-    // DROP ZONE SETUP
+    // IMPORT MODAL
     // ==========================================
-    setupDropZone() {
-        const dropZone = this.dom.dropZone;
-        if (!dropZone) return;
-
-        // Create hidden file input
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.multiple = true;
-        fileInput.style.display = 'none';
-        dropZone.appendChild(fileInput);
-
-        // Click to upload
-        dropZone.addEventListener('click', () => fileInput.click());
-
-        // Drag and drop events
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
+    setupImportModal() {
+        // Tab switching
+        document.querySelectorAll('.import-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.import-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.import-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`import${tab.dataset.importTab.charAt(0).toUpperCase() + tab.dataset.importTab.slice(1)}`).classList.add('active');
+            });
         });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
+        // Close modal
+        document.getElementById('importModalClose')?.addEventListener('click', () => this.hideImportModal());
+        document.getElementById('importModalCancel')?.addEventListener('click', () => this.hideImportModal());
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const files = Array.from(e.dataTransfer.files);
-            if (files.length > 0) {
-                this.handleFiles(files);
+        // Files import
+        document.getElementById('importFilesBtn')?.addEventListener('click', () => {
+            const input = document.getElementById('importFileInput');
+            if (input.files.length > 0) {
+                this.handleFiles(input.files);
+                this.hideImportModal();
+            } else {
+                this.statusManager.warning('⚠️ Please select files to upload');
             }
         });
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                this.handleFiles(e.target.files);
-                fileInput.value = '';
+        // Folder import
+        document.getElementById('importFolderBtn')?.addEventListener('click', () => {
+            const input = document.getElementById('importFolderInput');
+            if (input.files.length > 0) {
+                this.handleFiles(input.files);
+                this.hideImportModal();
+            } else {
+                this.statusManager.warning('⚠️ Please select a folder');
             }
         });
+
+        // GitHub import
+        document.getElementById('githubCloneBtn')?.addEventListener('click', () => this.importFromGitHub());
+
+        // Archive import
+        document.getElementById('importArchiveBtn')?.addEventListener('click', () => this.importArchive());
+        document.getElementById('importArchiveListBtn')?.addEventListener('click', () => this.listArchiveContents());
+
+        // API import
+        document.getElementById('apiImportBtn')?.addEventListener('click', () => this.importFromAPI());
+    }
+
+    showImportModal() {
+        const modal = this.dom.importModal;
+        if (modal) modal.style.display = 'flex';
+        this.dom.functionBuilder.style.display = 'none';
+    }
+
+    hideImportModal() {
+        const modal = this.dom.importModal;
+        if (modal) modal.style.display = 'none';
     }
 
     // ==========================================
-    // KEYBOARD SHORTCUTS
+    // GITHUB IMPORT
     // ==========================================
-    setupKeyboardShortcuts() {
-        document.addEventListener('keydown', (e) => {
-            // Ctrl+Enter = Analyze
-            if (e.ctrlKey && e.key === 'Enter') {
-                e.preventDefault();
-                this.analyzeFiles();
+    async importFromGitHub() {
+        const url = this.dom.githubUrlInput.value.trim();
+        if (!url) {
+            this.statusManager.warning('⚠️ Please enter a GitHub repository URL');
+            return;
+        }
+
+        this.showProgress('🐙 Cloning Repository', `Cloning ${url}...`);
+
+        try {
+            const parsed = this.parseGitHubUrl(url);
+            if (!parsed) {
+                this.hideProgress();
+                this.statusManager.error('❌ Invalid GitHub URL');
+                return;
             }
+
+            const contents = await this.fetchGitHubRepo(parsed.owner, parsed.repo);
             
-            // Ctrl+I = Integrate
-            if (e.ctrlKey && e.key === 'i') {
-                e.preventDefault();
-                this.integrateFiles();
-            }
+            this.dom.githubTree.style.display = 'block';
+            this.dom.githubTree.innerHTML = this.buildFileTree(contents);
+            this.dom.githubImportAllBtn.style.display = 'inline-block';
+            this.dom.githubStatus.textContent = `✅ Found ${contents.length} files in ${parsed.owner}/${parsed.repo}`;
+
+            this._githubContents = contents;
+            this._githubRepo = parsed;
+
+            this.hideProgress();
+            this.statusManager.success(`✅ Repository ${parsed.owner}/${parsed.repo} loaded successfully`);
             
-            // Escape = Close modal
-            if (e.key === 'Escape') {
-                this.modalManager.closeAll();
+            // Show function builder
+            this.dom.functionBuilder.style.display = 'block';
+            this.generateIntegrationMethods(contents);
+
+        } catch (error) {
+            this.hideProgress();
+            this.statusManager.error(`❌ Failed to import: ${error.message}`);
+            console.error('GitHub import error:', error);
+        }
+    }
+
+    parseGitHubUrl(url) {
+        let match = url.match(/github\.com\/([^\/]+)\/([^\/\.]+)(?:\.git)?/);
+        if (match) {
+            return { owner: match[1], repo: match[2] };
+        }
+        match = url.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)/);
+        if (match) {
+            return { owner: match[1], repo: match[2], branch: match[3], path: match[4] };
+        }
+        return null;
+    }
+
+    async fetchGitHubRepo(owner, repo, path = '') {
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+            throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const files = [];
+
+        if (Array.isArray(data)) {
+            for (const item of data) {
+                if (item.type === 'file') {
+                    files.push({
+                        name: item.name,
+                        path: item.path,
+                        type: 'file',
+                        size: item.size,
+                        downloadUrl: item.download_url
+                    });
+                } else if (item.type === 'dir') {
+                    const subFiles = await this.fetchGitHubRepo(owner, repo, item.path);
+                    files.push(...subFiles);
+                }
             }
+        }
+
+        return files;
+    }
+
+    buildFileTree(files) {
+        const tree = {};
+        for (const file of files) {
+            const parts = file.path.split('/');
+            let current = tree;
+            for (const part of parts) {
+                if (!current[part]) current[part] = {};
+                current = current[part];
+            }
+            current._file = file;
+        }
+
+        const render = (obj, indent = 0) => {
+            let html = '';
+            const sortedKeys = Object.keys(obj).sort();
+            for (const key of sortedKeys) {
+                if (key === '_file') continue;
+                const value = obj[key];
+                if (value._file) {
+                    const file = value._file;
+                    html += `<div class="indent" style="padding-left:${indent * 20}px;">
+                        <span class="file" data-path="${file.path}">📄 ${file.name}</span>
+                        <span style="color:#556677; font-size:0.7rem;"> (${FileUtils.formatSize(file.size)})</span>
+                    </div>`;
+                } else {
+                    html += `<div class="indent" style="padding-left:${indent * 20}px;">
+                        <span class="folder">📁 ${key}</span>
+                    </div>`;
+                    html += render(value, indent + 1);
+                }
+            }
+            return html;
+        };
+
+        return render(tree);
+    }
+
+    async importAllGitHubFiles() {
+        if (!this._githubContents) {
+            this.statusManager.warning('⚠️ No GitHub repository loaded');
+            return;
+        }
+
+        this.showProgress('📥 Importing Files', 'Importing all files from GitHub...');
+        let imported = 0;
+
+        for (const file of this._githubContents) {
+            try {
+                const response = await fetch(file.downloadUrl);
+                const content = await response.text();
+                const fileData = {
+                    id: this.generateId(),
+                    name: file.name,
+                    originalName: file.name,
+                    size: file.size,
+                    type: 'text/plain',
+                    extension: FileUtils.getFileExtension(file.name),
+                    content: content,
+                    path: file.path,
+                    status: 'uploaded',
+                    uploadedAt: new Date().toISOString(),
+                    isSolidity: file.name.endsWith('.sol')
+                };
+                this.files.push(fileData);
+                imported++;
+                this.updateProgress((imported / this._githubContents.length) * 100, `Importing ${file.name}...`);
+            } catch (error) {
+                console.error(`Error importing ${file.name}:`, error);
+            }
+        }
+
+        this.hideProgress();
+        this.updateFileList();
+        this.updateUI();
+        this.saveState();
+        this.dom.analysisPanel.style.display = 'block';
+        this.statusManager.success(`✅ Imported ${imported} files from GitHub`);
+        setTimeout(() => this.analyzeFiles(), 500);
+    }
+
+    // ==========================================
+    // API IMPORT
+    // ==========================================
+    async importFromAPI() {
+        const url = document.getElementById('apiImportUrl').value.trim();
+        if (!url) {
+            this.statusManager.warning('⚠️ Please enter an API URL');
+            return;
+        }
+
+        const method = document.getElementById('apiImportMethod').value;
+        const headersText = document.getElementById('apiImportHeaders').value;
+        const bodyText = document.getElementById('apiImportBody').value;
+
+        const headers = {};
+        if (headersText) {
+            headersText.split(',').forEach(h => {
+                const parts = h.split(':');
+                if (parts.length === 2) headers[parts[0].trim()] = parts[1].trim();
+            });
+        }
+
+        this.showProgress('🌐 Fetching API', `Fetching ${url}...`);
+
+        try {
+            const options = { method, headers };
+            if (method !== 'GET' && bodyText) options.body = bodyText;
+            const response = await fetch(url, options);
+            const data = await response.json();
+
+            document.getElementById('apiImportResponse').innerHTML = `
+                <div class="api-result ${response.ok ? 'success' : 'error'}">
+                    <h4>📡 Response (${response.status})</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+
+            this.hideProgress();
+            this.statusManager.success(`✅ API fetched successfully (${response.status})`);
+
+            if (Array.isArray(data) && data.length > 0) {
+                this.dom.functionBuilder.style.display = 'block';
+                this.generateIntegrationMethods(data);
+            }
+
+        } catch (error) {
+            this.hideProgress();
+            document.getElementById('apiImportResponse').innerHTML = `
+                <div class="api-result error">
+                    <h4>❌ Error</h4>
+                    <pre>${error.message}</pre>
+                </div>
+            `;
+            this.statusManager.error(`❌ API fetch failed: ${error.message}`);
+        }
+    }
+
+    // ==========================================
+    // ARCHIVE IMPORT
+    // ==========================================
+    async importArchive() {
+        const input = document.getElementById('importArchiveInput');
+        if (!input.files || input.files.length === 0) {
+            this.statusManager.warning('⚠️ Please select an archive file');
+            return;
+        }
+
+        const file = input.files[0];
+        this.showProgress('📦 Extracting Archive', `Extracting ${file.name}...`);
+
+        try {
+            const content = await FileUtils.readFile(file);
+            const fileData = {
+                id: this.generateId(),
+                name: file.name,
+                originalName: file.name,
+                size: file.size,
+                type: 'archive',
+                extension: FileUtils.getFileExtension(file.name),
+                content: content,
+                path: file.name,
+                status: 'uploaded',
+                uploadedAt: new Date().toISOString()
+            };
+            this.files.push(fileData);
+            this.updateFileList();
+            this.updateUI();
+            this.saveState();
+            this.dom.analysisPanel.style.display = 'block';
+            this.hideProgress();
+            this.statusManager.success(`✅ Archive ${file.name} imported successfully`);
+            setTimeout(() => this.analyzeFiles(), 500);
+        } catch (error) {
+            this.hideProgress();
+            this.statusManager.error(`❌ Failed to import archive: ${error.message}`);
+        }
+    }
+
+    async listArchiveContents() {
+        const input = document.getElementById('importArchiveInput');
+        if (!input.files || input.files.length === 0) {
+            this.statusManager.warning('⚠️ Please select an archive file');
+            return;
+        }
+
+        const file = input.files[0];
+        document.getElementById('archiveContents').style.display = 'block';
+        document.getElementById('archiveContents').innerHTML = `
+            <div class="folder">📁 ${file.name}</div>
+            <div class="indent" style="padding-left:20px;">
+                <div class="file">📄 Archive contents listing</div>
+                <div style="color:#556677;font-size:0.75rem;">Size: ${FileUtils.formatSize(file.size)}</div>
+                <div style="color:#556677;font-size:0.75rem;">Click "Upload & Extract" to import</div>
+            </div>
+        `;
+        this.statusManager.info(`📋 Archive ${file.name} loaded (${FileUtils.formatSize(file.size)})`);
+    }
+
+    // ==========================================
+    // FUNCTION BUILDER / METHOD GENERATION
+    // ==========================================
+    generateIntegrationMethods(data) {
+        const methods = [];
+        const timestamp = new Date().toISOString();
+
+        if (Array.isArray(data) && data.length > 0) {
+            const sample = data[0];
+            const keys = Object.keys(sample);
             
-            // Ctrl+U = Upload
-            if (e.ctrlKey && e.key === 'u') {
-                e.preventDefault();
-                document.getElementById('fileBtn')?.click();
-            }
-            
-            // Ctrl+Shift+C = Clear all
-            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
-                e.preventDefault();
-                this.clearAll();
-            }
+            methods.push(`// ============================================`);
+            methods.push(`// Generated Integration Methods`);
+            methods.push(`// Generated: ${timestamp}`);
+            methods.push(`// Data Type: Array of ${data.length} objects`);
+            methods.push(`// ============================================`);
+            methods.push(``);
+            methods.push(`class GeneratedIntegration {`);
+            methods.push(`    constructor(data) {`);
+            methods.push(`        this.data = data;`);
+            methods.push(`        this.count = data.length;`);
+            methods.push(`        this.timestamp = "${timestamp}";`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Get all items`);
+            methods.push(`    getAll() {`);
+            methods.push(`        return this.data;`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Get item by index`);
+            methods.push(`    getByIndex(index) {`);
+            methods.push(`        return this.data[index] || null;`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Search by key`);
+            methods.push(`    search(key, value) {`);
+            methods.push(`        return this.data.filter(item => item[key] === value);`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Get unique values by key`);
+            methods.push(`    getUnique(key) {`);
+            methods.push(`        return [...new Set(this.data.map(item => item[key]))];`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Get summary statistics`);
+            methods.push(`    getSummary() {`);
+            methods.push(`        return {`);
+            methods.push(`            total: this.count,`);
+            methods.push(`            keys: ${JSON.stringify(keys)},`);
+            methods.push(`            timestamp: this.timestamp`);
+            methods.push(`        };`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Export as JSON`);
+            methods.push(`    toJSON() {`);
+            methods.push(`        return JSON.stringify(this.data, null, 2);`);
+            methods.push(`    }`);
+            methods.push(`}`);
+            methods.push(``);
+            methods.push(`// Export instance`);
+            methods.push(`const integration = new GeneratedIntegration(${JSON.stringify(data).slice(0, 200)}...);`);
+            methods.push(``);
+            methods.push(`// Usage examples:`);
+            methods.push(`// integration.getAll()`);
+            methods.push(`// integration.getByIndex(0)`);
+            methods.push(`// integration.search('id', 123)`);
+            methods.push(`// integration.getUnique('category')`);
+            methods.push(`// integration.toJSON()`);
+        } else if (typeof data === 'object') {
+            methods.push(`// ============================================`);
+            methods.push(`// Generated Integration Methods`);
+            methods.push(`// Generated: ${timestamp}`);
+            methods.push(`// Data Type: Object`);
+            methods.push(`// ============================================`);
+            methods.push(``);
+            methods.push(`class GeneratedIntegration {`);
+            methods.push(`    constructor(data) {`);
+            methods.push(`        this.data = data;`);
+            methods.push(`        this.keys = Object.keys(data);`);
+            methods.push(`        this.timestamp = "${timestamp}";`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Get the data`);
+            methods.push(`    getData() {`);
+            methods.push(`        return this.data;`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Get a specific key`);
+            methods.push(`    get(key) {`);
+            methods.push(`        return this.data[key] || null;`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Get all keys`);
+            methods.push(`    getKeys() {`);
+            methods.push(`        return this.keys;`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Check if key exists`);
+            methods.push(`    hasKey(key) {`);
+            methods.push(`        return this.keys.includes(key);`);
+            methods.push(`    }`);
+            methods.push(``);
+            methods.push(`    // Export as JSON`);
+            methods.push(`    toJSON() {`);
+            methods.push(`        return JSON.stringify(this.data, null, 2);`);
+            methods.push(`    }`);
+            methods.push(`}`);
+            methods.push(``);
+            methods.push(`const integration = new GeneratedIntegration(${JSON.stringify(data).slice(0, 200)}...);`);
+        }
+
+        this.dom.methodPreview.textContent = methods.join('\n');
+        this.dom.functionBuilder.style.display = 'block';
+        this.generatedMethods.push({ id: Date.now(), content: methods.join('\n'), savedAt: timestamp });
+    }
+
+    copyMethods() {
+        const preview = this.dom.methodPreview;
+        if (!preview) return;
+        navigator.clipboard.writeText(preview.textContent).then(() => {
+            this.statusManager.success('✅ Methods copied to clipboard');
+        }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = preview.textContent;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+            this.statusManager.success('✅ Methods copied to clipboard');
         });
+    }
+
+    exportMethods() {
+        const preview = this.dom.methodPreview;
+        if (!preview) return;
+        const blob = new Blob([preview.textContent], { type: 'text/javascript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `integration-methods-${Date.now()}.js`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.statusManager.success('✅ Methods exported');
+    }
+
+    saveMethods() {
+        const preview = this.dom.methodPreview;
+        if (!preview) return;
+        this.generatedMethods.push({
+            id: Date.now(),
+            content: preview.textContent,
+            savedAt: new Date().toISOString()
+        });
+        localStorage.setItem('generated_methods', JSON.stringify(this.generatedMethods));
+        this.statusManager.success('✅ Methods saved');
     }
 
     // ==========================================
@@ -280,17 +691,13 @@ class App {
         if (files.length === 0) return;
 
         this.uploading = true;
-        this.showProgress();
-
+        this.dom.uploadProgress.style.display = 'block';
         let processed = 0;
         const total = files.length;
 
         for (const file of files) {
             try {
-                // Read file content
                 const content = await FileUtils.readFile(file);
-                
-                // Create file data object
                 const fileData = {
                     id: this.generateId(),
                     name: file.name,
@@ -308,7 +715,6 @@ class App {
                     metadata: {}
                 };
 
-                // Detect if Solidity
                 if (fileData.isSolidity) {
                     const contractData = this.solidityAnalyzer.analyze(content, file.name);
                     fileData.contractData = contractData;
@@ -318,25 +724,23 @@ class App {
 
                 this.files.push(fileData);
                 processed++;
-
-                // Update progress
                 const percent = Math.round((processed / total) * 100);
-                this.updateProgress(percent);
-
+                this.dom.progressFill.style.width = percent + '%';
+                this.dom.progressText.textContent = percent + '%';
             } catch (error) {
                 console.error(`Error reading file ${file.name}:`, error);
                 this.statusManager.error(`❌ Error reading ${file.name}: ${error.message}`);
             }
         }
 
-        // Complete upload
         this.uploading = false;
-        this.hideProgress();
+        this.dom.uploadProgress.style.display = 'none';
+        this.dom.progressFill.style.width = '0%';
+        this.dom.progressText.textContent = '0%';
         this.updateFileList();
         this.updateUI();
         this.saveState();
 
-        // Auto-analyze if files were uploaded
         if (this.files.length > 0) {
             this.dom.analysisPanel.style.display = 'block';
             this.statusManager.success(`✅ ${processed} files uploaded successfully`);
@@ -393,7 +797,6 @@ class App {
         this.renderAnalysis(analyzed);
         this.updateUI();
         this.saveState();
-        
         this.statusManager.success(`✅ Analysis complete: ${analyzed.length} files analyzed`);
     }
 
@@ -442,7 +845,6 @@ class App {
             container.appendChild(card);
         });
 
-        // Update Solidity tab
         this.renderSolidityContracts();
     }
 
@@ -472,7 +874,6 @@ class App {
             }
         }
 
-        // Add file size
         if (file?.size) {
             details.push(`💾 ${FileUtils.formatSize(file.size)}`);
         }
@@ -609,7 +1010,6 @@ class App {
             `;
         }).join('');
 
-        // Update contract count
         if (this.dom.totalContracts) {
             this.dom.totalContracts.textContent = contracts.length;
         }
@@ -623,9 +1023,7 @@ class App {
         }
 
         this.statusManager.loading(`⛓️ Deploying ${file.name}...`);
-
         await new Promise(resolve => setTimeout(resolve, 2000));
-
         this.statusManager.success(`✅ ${file.contractData?.name || file.name} deployed successfully!`);
         
         this.modalManager.show({
@@ -692,6 +1090,33 @@ class App {
         this.statusManager.success('✅ Compilation complete');
     }
 
+    async deployContract() {
+        const contracts = this.files.filter(f => f.isSolidity || f.name.endsWith('.sol'));
+        if (contracts.length === 0) {
+            this.statusManager.warning('⚠️ No Solidity contracts found to deploy');
+            return;
+        }
+        await this.deploySingleContract(this.files.indexOf(contracts[0]));
+    }
+
+    async verifyContract() {
+        const contracts = this.files.filter(f => f.isSolidity || f.name.endsWith('.sol'));
+        if (contracts.length === 0) {
+            this.statusManager.warning('⚠️ No Solidity contracts found to verify');
+            return;
+        }
+        await this.verifySingleContract(this.files.indexOf(contracts[0]));
+    }
+
+    async compileContract() {
+        const contracts = this.files.filter(f => f.isSolidity || f.name.endsWith('.sol'));
+        if (contracts.length === 0) {
+            this.statusManager.warning('⚠️ No Solidity contracts found to compile');
+            return;
+        }
+        await this.compileSingleContract(this.files.indexOf(contracts[0]));
+    }
+
     // ==========================================
     // UI UPDATES
     // ==========================================
@@ -743,31 +1168,22 @@ class App {
     // ==========================================
     // PROGRESS
     // ==========================================
-    showProgress() {
-        if (this.dom.uploadProgress) {
-            this.dom.uploadProgress.style.display = 'block';
-        }
+    showProgress(title, message) {
+        this.dom.progressTitle.textContent = title;
+        this.dom.progressMessage.textContent = message;
+        this.dom.progressFillOverlay.style.width = '0%';
+        this.dom.progressPercent.textContent = '0%';
+        this.dom.progressOverlay.classList.add('active');
     }
 
-    updateProgress(percent) {
-        if (this.dom.progressFill) {
-            this.dom.progressFill.style.width = percent + '%';
-        }
-        if (this.dom.progressText) {
-            this.dom.progressText.textContent = percent + '%';
-        }
+    updateProgress(percent, message) {
+        this.dom.progressFillOverlay.style.width = Math.min(100, percent) + '%';
+        this.dom.progressPercent.textContent = Math.min(100, percent) + '%';
+        if (message) this.dom.progressMessage.textContent = message;
     }
 
     hideProgress() {
-        if (this.dom.uploadProgress) {
-            this.dom.uploadProgress.style.display = 'none';
-        }
-        if (this.dom.progressFill) {
-            this.dom.progressFill.style.width = '0%';
-        }
-        if (this.dom.progressText) {
-            this.dom.progressText.textContent = '0%';
-        }
+        this.dom.progressOverlay.classList.remove('active');
     }
 
     // ==========================================
@@ -835,17 +1251,14 @@ class App {
     switchTab(tab) {
         this.currentTab = tab;
         
-        // Update nav buttons
         document.querySelectorAll('.nav-btn').forEach(el => {
             el.classList.toggle('active', el.dataset.tab === tab);
         });
         
-        // Update tab content
         document.querySelectorAll('.tab-content').forEach(el => {
             el.classList.toggle('active', el.id === `${tab}Tab`);
         });
         
-        // Refresh content when switching to certain tabs
         if (tab === 'solidity') {
             this.renderSolidityContracts();
         }
@@ -910,177 +1323,63 @@ class App {
     }
 
     // ==========================================
-    // EXPORT / IMPORT
+    // DROP ZONE SETUP
     // ==========================================
-    async exportData() {
-        const data = {
-            version: '4.0.0',
-            exportedAt: new Date().toISOString(),
-            files: this.files,
-            integrations: this.integrations,
-            modules: this.modules,
-            apiCalls: this.apiCalls
-        };
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `integrator-export-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        this.statusManager.success('📤 Data exported successfully');
-    }
+    setupDropZone() {
+        const dropZone = this.dom.dropZone;
+        if (!dropZone) return;
 
-    async exportAnalysis() {
-        if (this.analyzedFiles.length === 0) {
-            this.statusManager.warning('⚠️ No analysis data to export');
-            return;
-        }
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.multiple = true;
+        fileInput.style.display = 'none';
+        dropZone.appendChild(fileInput);
 
-        const data = {
-            version: '4.0.0',
-            exportedAt: new Date().toISOString(),
-            analysis: this.analyzedFiles,
-            summary: {
-                total: this.analyzedFiles.length,
-                types: this.analyzedFiles.reduce((acc, f) => {
-                    acc[f.type] = (acc[f.type] || 0) + 1;
-                    return acc;
-                }, {})
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length > 0) {
+                this.handleFiles(files);
             }
-        };
-
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `analysis-export-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        this.statusManager.success('📤 Analysis exported successfully');
-    }
-
-    exportIntegrations() {
-        if (this.integrations.length === 0) {
-            this.statusManager.warning('⚠️ No integrations to export');
-            return;
-        }
-
-        const data = {
-            version: '4.0.0',
-            exportedAt: new Date().toISOString(),
-            integrations: this.integrations
-        };
-
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `integrations-export-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        this.statusManager.success('📤 Integrations exported successfully');
-    }
-
-    // ==========================================
-    // FILE OPERATIONS
-    // ==========================================
-    removeFile(index) {
-        const file = this.files[index];
-        if (!file) return;
-
-        if (file.isSolidity) {
-            this.contracts = this.contracts.filter(c => c.name !== file.contractData?.name);
-        }
-        
-        this.files.splice(index, 1);
-        if (this.analyzedFiles[index]) {
-            this.analyzedFiles.splice(index, 1);
-        }
-        this.updateFileList();
-        this.updateUI();
-        this.saveState();
-        this.renderSolidityContracts();
-        this.statusManager.info(`🗑️ Removed ${file.name}`);
-    }
-
-    viewFile(index) {
-        const file = this.files[index];
-        if (!file) {
-            this.statusManager.error('❌ File not found');
-            return;
-        }
-
-        let content = file.content;
-        if (typeof content === 'string' && content.length > 5000) {
-            content = content.slice(0, 5000) + '\n... (truncated)';
-        }
-
-        this.modalManager.show({
-            title: `📄 ${file.name}`,
-            content: `
-                <div class="file-preview">
-                    <div class="file-metadata">
-                        <span class="badge">${file.analysis?.type || 'unknown'}</span>
-                        <span class="badge">${FileUtils.formatSize(file.size)}</span>
-                        ${file.isSolidity ? '<span class="badge warning">⛓️ Solidity</span>' : ''}
-                        ${file.analysis?.complexity ? `<span class="badge">📊 ${file.analysis.complexity}</span>` : ''}
-                    </div>
-                    <pre>${content}</pre>
-                </div>
-            `,
-            size: 'large'
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                this.handleFiles(e.target.files);
+                fileInput.value = '';
+            }
         });
     }
 
     // ==========================================
-    // MODULE MANAGEMENT
+    // KEYBOARD SHORTCUTS
     // ==========================================
-    renderModules() {
-        const grid = this.dom.moduleGrid;
-        if (!grid) return;
-
-        if (this.modules.length === 0) {
-            grid.innerHTML = `
-                <div class="empty-state">
-                    <span>🧩</span>
-                    <p>No modules installed</p>
-                    <small>Click "Install Module" to add one</small>
-                </div>
-            `;
-            return;
-        }
-
-        grid.innerHTML = this.modules.map((module, index) => `
-            <div class="module-card">
-                <div class="module-header">
-                    <span>🧩</span>
-                    <span class="module-name">${module.name}</span>
-                    <span class="module-version badge">v${module.version || '1.0.0'}</span>
-                </div>
-                <div class="module-body">
-                    <div class="module-details">
-                        <span>📂 ${module.path || 'local'}</span>
-                        <span>📅 ${new Date(module.installed || module.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    <div class="module-actions">
-                        <button class="btn small" onclick="window.app.viewModule(${index})">👁️ View</button>
-                        <button class="btn small primary" onclick="window.app.launchModule(${index})">▶️ Run</button>
-                        <button class="btn small danger" onclick="window.app.removeModule(${index})">🗑️</button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                this.analyzeFiles();
+            }
+            if (e.key === 'Escape') {
+                this.modalManager.closeAll();
+            }
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                document.getElementById('fileBtn')?.click();
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                this.clearAll();
+            }
+        });
     }
 
     // ==========================================
@@ -1576,33 +1875,94 @@ class App {
     }
 
     // ==========================================
-    // SOLIDITY DEPLOYMENT METHODS
+    // FILE OPERATIONS
     // ==========================================
-    async deployContract() {
-        const contracts = this.files.filter(f => f.isSolidity || f.name.endsWith('.sol'));
-        if (contracts.length === 0) {
-            this.statusManager.warning('⚠️ No Solidity contracts found to deploy');
-            return;
+    removeFile(index) {
+        const file = this.files[index];
+        if (!file) return;
+
+        if (file.isSolidity) {
+            this.contracts = this.contracts.filter(c => c.name !== file.contractData?.name);
         }
-        await this.deploySingleContract(this.files.indexOf(contracts[0]));
+        
+        this.files.splice(index, 1);
+        if (this.analyzedFiles[index]) {
+            this.analyzedFiles.splice(index, 1);
+        }
+        this.updateFileList();
+        this.updateUI();
+        this.saveState();
+        this.renderSolidityContracts();
+        this.statusManager.info(`🗑️ Removed ${file.name}`);
     }
 
-    async verifyContract() {
-        const contracts = this.files.filter(f => f.isSolidity || f.name.endsWith('.sol'));
-        if (contracts.length === 0) {
-            this.statusManager.warning('⚠️ No Solidity contracts found to verify');
+    viewFile(index) {
+        const file = this.files[index];
+        if (!file) {
+            this.statusManager.error('❌ File not found');
             return;
         }
-        await this.verifySingleContract(this.files.indexOf(contracts[0]));
+
+        let content = file.content;
+        if (typeof content === 'string' && content.length > 5000) {
+            content = content.slice(0, 5000) + '\n... (truncated)';
+        }
+
+        this.modalManager.show({
+            title: `📄 ${file.name}`,
+            content: `
+                <div class="file-preview">
+                    <div class="file-metadata">
+                        <span class="badge">${file.analysis?.type || 'unknown'}</span>
+                        <span class="badge">${FileUtils.formatSize(file.size)}</span>
+                        ${file.isSolidity ? '<span class="badge warning">⛓️ Solidity</span>' : ''}
+                        ${file.analysis?.complexity ? `<span class="badge">📊 ${file.analysis.complexity}</span>` : ''}
+                    </div>
+                    <pre>${content}</pre>
+                </div>
+            `,
+            size: 'large'
+        });
     }
 
-    async compileContract() {
-        const contracts = this.files.filter(f => f.isSolidity || f.name.endsWith('.sol'));
-        if (contracts.length === 0) {
-            this.statusManager.warning('⚠️ No Solidity contracts found to compile');
+    // ==========================================
+    // MODULE RENDERING
+    // ==========================================
+    renderModules() {
+        const grid = this.dom.moduleGrid;
+        if (!grid) return;
+
+        if (this.modules.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <span>🧩</span>
+                    <p>No modules installed</p>
+                    <small>Click "Install Module" to add one</small>
+                </div>
+            `;
             return;
         }
-        await this.compileSingleContract(this.files.indexOf(contracts[0]));
+
+        grid.innerHTML = this.modules.map((module, index) => `
+            <div class="module-card">
+                <div class="module-header">
+                    <span>🧩</span>
+                    <span class="module-name">${module.name}</span>
+                    <span class="module-version badge">v${module.version || '1.0.0'}</span>
+                </div>
+                <div class="module-body">
+                    <div class="module-details">
+                        <span>📂 ${module.path || 'local'}</span>
+                        <span>📅 ${new Date(module.installed || module.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div class="module-actions">
+                        <button class="btn small" onclick="window.app.viewModule(${index})">👁️ View</button>
+                        <button class="btn small primary" onclick="window.app.launchModule(${index})">▶️ Run</button>
+                        <button class="btn small danger" onclick="window.app.removeModule(${index})">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     // ==========================================
@@ -1620,7 +1980,7 @@ class App {
                 }
             }
         } catch (e) {
-            // Silent fail - don't disrupt user experience
+            // Silent fail
         }
     }
 }
@@ -1631,7 +1991,6 @@ class App {
 const app = new App();
 window.app = app;
 
-// Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => app.init());
 } else {
