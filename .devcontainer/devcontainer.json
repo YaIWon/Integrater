@@ -10,7 +10,8 @@
         "bradlc.vscode-tailwindcss",
         "ms-vscode.vscode-typescript-next",
         "formulahendry.auto-rename-tag",
-        "ritwickdey.LiveServer"
+        "ritwickdey.LiveServer",
+        "GitHub.copilot"
       ],
       "settings": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -20,12 +21,13 @@
         },
         "liveServer.settings.root": "/workspaces/universal-integrator",
         "liveServer.settings.port": 5500,
-        "liveServer.settings.file": "index.html"
+        "liveServer.settings.file": "index.html",
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   },
 
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm install && npm run hub:build || echo 'Hub build skipped'",
 
   "portsAttributes": {
     "3000": {
@@ -35,23 +37,33 @@
     "5500": {
       "label": "Live Server",
       "onAutoForward": "openPreview"
+    },
+    "8000": {
+      "label": "API",
+      "onAutoForward": "notify"
     }
   },
 
-  "forwardPorts": [3000, 5500],
+  "forwardPorts": [3000, 5500, 8000],
 
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest"
-    }
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
   "waitFor": "onCreateCommand",
 
-  "updateContentCommand": "npm install",
+  "updateContentCommand": "npm install && npm run hub:build || echo 'Hub build skipped'",
 
   "postAttachCommand": "npm run dev",
 
-  "remoteUser": "node"
+  "remoteUser": "node",
+
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "PORT": "3000"
+  }
 }
