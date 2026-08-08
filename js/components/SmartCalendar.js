@@ -28,14 +28,22 @@ export default class SmartCalendar {
             'prick', 'knob', 'bellend', 'twat', 'minge', 'clunge', 'fanny', 'gash'
         ];
         
+        // Auto-init on construction
         this.init();
     }
 
     init() {
+        // Check if already exists
+        if (document.getElementById('smartCalendarModal')) {
+            console.log('📅 Smart Calendar already exists');
+            return;
+        }
+        
         this.createUI();
         this.loadReminders();
         this.startClock();
         this.loadVoice();
+        this.addLaunchButton();
         console.log('📅 Smart Calendar initialized');
     }
 
@@ -43,9 +51,6 @@ export default class SmartCalendar {
     // UI CREATION
     // ==========================================
     createUI() {
-        // Check if already exists
-        if (document.getElementById('smartCalendarModal')) return;
-        
         const modal = document.createElement('div');
         modal.id = 'smartCalendarModal';
         modal.style.cssText = `
@@ -249,13 +254,10 @@ export default class SmartCalendar {
         // Setup event listeners
         this.setupEventListeners();
         this.setupVoiceControls();
-        
-        // Add button to home page
-        this.addLaunchButton();
     }
 
     // ==========================================
-    // LAUNCH BUTTON ON HOME PAGE
+    // LAUNCH BUTTON ON HOME PAGE (AUTO-ADDED)
     // ==========================================
     addLaunchButton() {
         // Remove existing button if any
@@ -292,6 +294,7 @@ export default class SmartCalendar {
         };
         
         document.body.appendChild(btn);
+        console.log('✅ Smart Calendar button added to page');
     }
 
     // ==========================================
@@ -344,7 +347,6 @@ export default class SmartCalendar {
     loadVoice() {
         if (this.synth) {
             const voices = this.synth.getVoices();
-            // Find female voice
             const femaleVoice = voices.find(v => 
                 v.name.toLowerCase().includes('female') || 
                 v.name.toLowerCase().includes('samantha') ||
@@ -363,33 +365,27 @@ export default class SmartCalendar {
     speakText(text) {
         if (!this.synth) return;
         
-        // Add cuss words
         const cussedText = this.addCussWords(text);
         
         const utterance = new SpeechSynthesisUtterance(cussedText);
         if (this.voice) utterance.voice = this.voice;
         
-        // Apply effects
         utterance.pitch = this.voiceEffects.pitch;
         utterance.rate = this.voiceEffects.rate;
         utterance.volume = this.voiceEffects.volume;
         
-        // Echo effect - speak multiple times
         const echoCount = Math.floor(this.voiceEffects.echo);
         const reverbDelay = this.voiceEffects.reverb * 200;
         const distortion = this.voiceEffects.distortion;
         
-        // Apply distortion (simulated by pitch variation)
         if (distortion > 0) {
             const origPitch = utterance.pitch;
             utterance.pitch = origPitch * (1 + distortion * 0.3);
         }
         
-        // Speak main
         this.synth.speak(utterance);
         this.isSpeaking = true;
         
-        // Echo effect
         for (let i = 1; i <= echoCount; i++) {
             const echoUtterance = new SpeechSynthesisUtterance(cussedText);
             if (this.voice) echoUtterance.voice = this.voice;
@@ -402,7 +398,6 @@ export default class SmartCalendar {
             }, i * 200);
         }
         
-        // Reverb effect (delayed repeats with decay)
         if (reverbDelay > 0) {
             for (let i = 1; i <= 3; i++) {
                 const reverbUtterance = new SpeechSynthesisUtterance(cussedText);
@@ -434,21 +429,17 @@ export default class SmartCalendar {
         let cussCount = Math.max(1, Math.floor(words.length * 0.3 * cussLevel));
         let inserted = 0;
         
-        // Add cuss words every few words
         for (let i = 0; i < words.length; i++) {
             result.push(words[i]);
             
-            // Add cuss word after every N words
             if (i > 0 && i % 2 === 0 && inserted < cussCount) {
                 const randomCuss = this.cussWords[Math.floor(Math.random() * this.cussWords.length)];
-                // Add intensity based on cuss level
                 const intensity = cussLevel > 0.7 ? '!!' : cussLevel > 0.4 ? '!' : '';
                 result.push(`${randomCuss}${intensity}`);
                 inserted++;
             }
         }
         
-        // Add some random cuss words at the end
         if (cussLevel > 0.7 && result.length > 0) {
             const finalCuss = this.cussWords[Math.floor(Math.random() * this.cussWords.length)];
             result.push(`... and ${finalCuss} that's it!`);
@@ -521,7 +512,6 @@ export default class SmartCalendar {
             }, interval);
             this.intervals.push({ id, reminderId: reminder.id });
         } else {
-            // Once - speak now
             setTimeout(() => {
                 if (reminder.active) {
                     this.speakText(`Reminder! ${reminder.text}`);
@@ -636,7 +626,6 @@ export default class SmartCalendar {
             if (data) {
                 this.reminders = JSON.parse(data);
                 this.renderReminders();
-                // Re-setup reminders
                 this.reminders.forEach(r => {
                     if (r.active) this.setupReminder(r);
                 });
@@ -658,7 +647,7 @@ export default class SmartCalendar {
 }
 
 // ============================================
-// AUTO-INITIALIZE
+// AUTO-INITIALIZE ON PAGE LOAD
 // ============================================
 let calendarInstance = null;
 
@@ -670,7 +659,7 @@ function initSmartCalendar() {
     return calendarInstance;
 }
 
-// Initialize when DOM is ready
+// Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSmartCalendar);
 } else {
