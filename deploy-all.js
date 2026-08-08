@@ -313,15 +313,12 @@ function isGitRepo() {
 // DEPLOYMENT CONFIGURATION
 // ============================================
 const config = {
-    // Build settings
     build: {
         sourceDir: path.join(__dirname),
         outputDir: path.join(__dirname, 'dist'),
         entryFile: path.join(__dirname, 'index.html'),
         webpackConfig: path.join(__dirname, 'webpack.config.js'),
     },
-    
-    // Deployment settings
     deploy: {
         pages: {
             enabled: true,
@@ -342,8 +339,6 @@ const config = {
             project: null,
         },
     },
-    
-    // Environment settings
     env: {
         node: '>=16.0.0',
         npm: '>=8.0.0',
@@ -354,11 +349,8 @@ const config = {
 // DEPLOYMENT FUNCTIONS
 // ============================================
 
-// ==========================================
-// STEP 1: CHECK PREREQUISITES
-// ==========================================
 async function checkPrerequisites() {
-    logStep('1/10', 'Checking prerequisites...');
+    logStep('1/11', 'Checking prerequisites...');
     
     const results = {
         node: false,
@@ -368,7 +360,6 @@ async function checkPrerequisites() {
         webpack: false,
     };
 
-    // Check Node.js
     try {
         const version = execSync('node --version', { encoding: 'utf8' }).trim();
         log(`   ${colors.green}✅ Node.js: ${version}${colors.reset}`);
@@ -378,7 +369,6 @@ async function checkPrerequisites() {
         results.node = false;
     }
 
-    // Check npm
     try {
         const version = execSync('npm --version', { encoding: 'utf8' }).trim();
         log(`   ${colors.green}✅ npm: ${version}${colors.reset}`);
@@ -388,7 +378,6 @@ async function checkPrerequisites() {
         results.npm = false;
     }
 
-    // Check Git
     try {
         const version = execSync('git --version', { encoding: 'utf8' }).trim();
         log(`   ${colors.green}✅ Git: ${version}${colors.reset}`);
@@ -398,7 +387,6 @@ async function checkPrerequisites() {
         results.git = false;
     }
 
-    // Check Docker
     try {
         const version = execSync('docker --version', { encoding: 'utf8' }).trim();
         log(`   ${colors.green}✅ Docker: ${version}${colors.reset}`);
@@ -408,7 +396,6 @@ async function checkPrerequisites() {
         results.docker = false;
     }
 
-    // Check Webpack
     try {
         const version = execSync('npx webpack --version', { encoding: 'utf8' }).trim();
         log(`   ${colors.green}✅ Webpack: ${version}${colors.reset}`);
@@ -421,16 +408,13 @@ async function checkPrerequisites() {
     return results;
 }
 
-// ==========================================
-// STEP 2: INSTALL DEPENDENCIES
-// ==========================================
 async function installDependencies() {
-    logStep('2/10', 'Installing dependencies...');
+    logStep('2/11', 'Installing dependencies...');
     
     logInfo('Running npm install...');
     
     try {
-        const result = await execCommand('npm install', { verbose: true });
+        await execCommand('npm install', { verbose: true });
         logSuccess('Dependencies installed successfully');
         return true;
     } catch (error) {
@@ -439,13 +423,9 @@ async function installDependencies() {
     }
 }
 
-// ==========================================
-// STEP 3: RUN TESTS
-// ==========================================
 async function runTests() {
-    logStep('3/10', 'Running tests...');
+    logStep('3/11', 'Running tests...');
     
-    // Check if test script exists
     const pkg = JSON.parse(readFile(path.join(__dirname, 'package.json')) || '{}');
     if (!pkg.scripts || !pkg.scripts.test) {
         logWarning('No test script found, skipping tests');
@@ -464,11 +444,8 @@ async function runTests() {
     }
 }
 
-// ==========================================
-// STEP 4: RUN LINTING
-// ==========================================
 async function runLinting() {
-    logStep('4/10', 'Running linting...');
+    logStep('4/11', 'Running linting...');
     
     const pkg = JSON.parse(readFile(path.join(__dirname, 'package.json')) || '{}');
     if (!pkg.scripts || !pkg.scripts.lint) {
@@ -488,11 +465,8 @@ async function runLinting() {
     }
 }
 
-// ==========================================
-// STEP 5: BUILD PROJECT
-// ==========================================
 async function buildProject() {
-    logStep('5/10', 'Building project...');
+    logStep('5/11', 'Building project...');
     
     logInfo('Running build...');
     
@@ -506,11 +480,52 @@ async function buildProject() {
     }
 }
 
-// ==========================================
-// STEP 6: CHECK BUILD OUTPUT
-// ==========================================
+async function buildHub() {
+    logStep('5.5/11', 'Building Hub...');
+    
+    logInfo('Running hub build...');
+    
+    try {
+        if (!fileExists(path.join(__dirname, 'hub.js'))) {
+            logWarning('hub.js not found, skipping hub build');
+            return true;
+        }
+        
+        await execCommand('npm run hub:build', { verbose: true });
+        logSuccess('Hub built successfully');
+        return true;
+    } catch (error) {
+        logWarning(`Hub build failed: ${error.message}`);
+        return false;
+    }
+}
+
+async function startHubWatcher() {
+    logStep('5.6/11', 'Starting Hub Watcher...');
+    
+    try {
+        if (!fileExists(path.join(__dirname, 'hub-watcher.js'))) {
+            logWarning('hub-watcher.js not found, skipping');
+            return true;
+        }
+        
+        try {
+            await execCommand('npm list chokidar', { silent: true });
+        } catch {
+            logInfo('Installing chokidar...');
+            await execCommand('npm install chokidar --save', { verbose: true });
+        }
+        
+        logSuccess('Hub watcher ready');
+        return true;
+    } catch (error) {
+        logWarning(`Hub watcher setup failed: ${error.message}`);
+        return false;
+    }
+}
+
 async function checkBuildOutput() {
-    logStep('6/10', 'Checking build output...');
+    logStep('6/11', 'Checking build output...');
     
     const distPath = config.build.outputDir;
     
@@ -526,7 +541,6 @@ async function checkBuildOutput() {
     log(`   ${colors.green}✅ Found ${fileCount} files${colors.reset}`);
     log(`   ${colors.green}✅ Total size: ${formatSize(size)}${colors.reset}`);
     
-    // Check for index.html
     const indexPath = path.join(distPath, 'index.html');
     if (!fileExists(indexPath)) {
         logWarning('index.html not found in dist');
@@ -534,7 +548,6 @@ async function checkBuildOutput() {
         log(`   ${colors.green}✅ index.html found${colors.reset}`);
     }
 
-    // Show file list
     if (files.length > 0 && files.length <= 20) {
         logSubHeader('Files in dist:');
         for (const file of files) {
@@ -551,34 +564,27 @@ async function checkBuildOutput() {
     return true;
 }
 
-// ==========================================
-// STEP 7: CREATE DEPLOYMENT FILES
-// ==========================================
 async function createDeploymentFiles() {
-    logStep('7/10', 'Creating deployment files...');
+    logStep('7/11', 'Creating deployment files...');
     
     const distPath = config.build.outputDir;
     
-    // Create .nojekyll
     const nojekyllPath = path.join(distPath, '.nojekyll');
     writeFile(nojekyllPath, '');
     log('   ✅ Created .nojekyll', 'green');
 
-    // Create 404.html
     const _404Path = path.join(distPath, '404.html');
     if (!fileExists(_404Path)) {
         writeFile(_404Path, get404Template());
         log('   ✅ Created 404.html', 'green');
     }
 
-    // Create .gitignore for dist
     const gitignorePath = path.join(distPath, '.gitignore');
     if (!fileExists(gitignorePath)) {
         writeFile(gitignorePath, '# Ignore everything\n*\n!.gitignore\n!.nojekyll\n!index.html\n!404.html\n!*.css\n!*.js\n!*.woff2\n!*.png\n!*.jpg\n!*.svg\n!*.json');
         log('   ✅ Created .gitignore', 'green');
     }
 
-    // Copy deploy scripts
     const deployScripts = [
         { src: 'deploy.sh', dest: path.join(distPath, 'deploy.sh') },
         { src: 'deploy-all.js', dest: path.join(distPath, 'deploy-all.js') },
@@ -591,7 +597,6 @@ async function createDeploymentFiles() {
         }
     }
 
-    // Copy config files
     const configFiles = [
         { src: 'package.json', dest: path.join(distPath, 'package.json') },
         { src: 'server.js', dest: path.join(distPath, 'server.js') },
@@ -605,7 +610,6 @@ async function createDeploymentFiles() {
         }
     }
 
-    // Copy assets
     const assetDirs = ['css', 'js', 'images', 'fonts', 'data'];
     for (const dir of assetDirs) {
         const srcDir = path.join(__dirname, dir);
@@ -620,15 +624,11 @@ async function createDeploymentFiles() {
     return true;
 }
 
-// ==========================================
-// STEP 8: DEPLOY TO GITHUB PAGES
-// ==========================================
 async function deployToGitHubPages() {
-    logStep('8/10', 'Deploying to GitHub Pages...');
+    logStep('8/11', 'Deploying to GitHub Pages...');
     
     const distPath = config.build.outputDir;
     
-    // Check if gh-pages is installed
     try {
         await execCommand('gh-pages --version', { silent: true });
     } catch {
@@ -646,7 +646,6 @@ async function deployToGitHubPages() {
         }
     }
 
-    // Get git info
     const gitInfo = getGitInfo();
     if (!gitInfo.username || !gitInfo.repo) {
         logError('Could not determine GitHub repository info');
@@ -665,13 +664,9 @@ async function deployToGitHubPages() {
     }
 }
 
-// ==========================================
-// STEP 9: DEPLOY TO DOCKER
-// ==========================================
 async function deployToDocker() {
-    logStep('9/10', 'Building Docker image...');
+    logStep('9/11', 'Building Docker image...');
     
-    // Check if Docker is installed
     try {
         await execCommand('docker --version', { silent: true });
     } catch {
@@ -679,7 +674,6 @@ async function deployToDocker() {
         return true;
     }
 
-    // Check if Dockerfile exists
     if (!fileExists(path.join(__dirname, 'Dockerfile'))) {
         logWarning('Dockerfile not found, creating one...');
         writeFile(path.join(__dirname, 'Dockerfile'), getDockerfileTemplate());
@@ -694,7 +688,6 @@ async function deployToDocker() {
         await execCommand(`docker build -t ${imageName}:${tag} .`, { verbose: true });
         logSuccess('Docker image built successfully');
         
-        // Check if we should run the container
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
@@ -722,11 +715,8 @@ async function deployToDocker() {
     }
 }
 
-// ==========================================
-// STEP 10: DEPLOY TO CODESPACES
-// ==========================================
 async function deployToCodespaces() {
-    logStep('10/10', 'Setting up Codespaces...');
+    logStep('10/11', 'Setting up Codespaces...');
     
     const devcontainerPath = path.join(__dirname, '.devcontainer');
     const devcontainerJson = path.join(devcontainerPath, 'devcontainer.json');
@@ -744,7 +734,6 @@ async function deployToCodespaces() {
         log('   ✅ devcontainer.json already exists', 'green');
     }
 
-    // Create .codespaces directory
     const codespacesPath = path.join(__dirname, '.codespaces');
     if (!fileExists(codespacesPath)) {
         ensureDirectory(codespacesPath);
@@ -762,9 +751,9 @@ async function deployToCodespaces() {
     return true;
 }
 
-// ==========================================
+// ============================================
 // TEMPLATES
-// ==========================================
+// ============================================
 function get404Template() {
     return `<!DOCTYPE html>
 <html lang="en">
@@ -836,7 +825,6 @@ function get404Template() {
         <div class="footer">v4.0.0 • The Most Advanced File Integration System</div>
     </div>
     <script>
-        // Redirect to main page
         window.location.href = './';
     </script>
 </body>
@@ -848,20 +836,15 @@ function getDockerfileTemplate() {
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy application files
 COPY . .
 
-# Build the application
 RUN npm run build
 
-# Expose port
 EXPOSE 3000
 
-# Start the server
 CMD ["npm", "start"]`;
 }
 
@@ -895,45 +878,27 @@ function getDevcontainerTemplate() {
     }
   },
 
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm install && npm run hub:build || echo 'Hub build skipped'",
 
   "portsAttributes": {
-    "3000": {
-      "label": "App",
-      "onAutoForward": "openPreview"
-    },
-    "5500": {
-      "label": "Live Server",
-      "onAutoForward": "openPreview"
-    },
-    "8000": {
-      "label": "API",
-      "onAutoForward": "notify"
-    }
+    "3000": { "label": "App", "onAutoForward": "openPreview" },
+    "5500": { "label": "Live Server", "onAutoForward": "openPreview" },
+    "8000": { "label": "API", "onAutoForward": "notify" }
   },
 
   "forwardPorts": [3000, 5500, 8000],
 
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest"
-    },
+    "ghcr.io/devcontainers/features/git:1": { "version": "latest" },
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
   "waitFor": "onCreateCommand",
-
-  "updateContentCommand": "npm install",
-
+  "updateContentCommand": "npm install && npm run hub:build || echo 'Hub build skipped'",
   "postAttachCommand": "npm run dev",
-
   "remoteUser": "node",
-
-  "containerEnv": {
-    "NODE_ENV": "development",
-    "PORT": "3000"
-  }
+  "containerEnv": { "NODE_ENV": "development", "PORT": "3000" }
 }`;
 }
 
@@ -959,19 +924,10 @@ function getCodespacesReadme() {
 ## Development Workflow
 
 \`\`\`bash
-# Install dependencies
 npm install
-
-# Run development server
 npm run dev
-
-# Build for production
 npm run build
-
-# Run tests
 npm test
-
-# Deploy to GitHub Pages
 npm run deploy
 \`\`\`
 
@@ -981,24 +937,16 @@ npm run deploy
 - \`5500\` - Live Server (static preview)
 - \`8000\` - API server
 
-## Notes
-
-- All dependencies are pre-installed
-- Extensions are configured for optimal development
-- Docker-in-Docker is available
-- GitHub CLI is installed
-
 ---
 Generated by Universal Integrator Pro v4.0`;
 }
 
-// ==========================================
+// ============================================
 // DEPLOYMENT SUMMARY
-// ==========================================
+// ============================================
 function displaySummary(gitInfo, results) {
     logHeader('📊 DEPLOYMENT SUMMARY');
     
-    // Steps completed
     const completed = results.filter(r => r.success).length;
     const total = results.length;
     const percent = Math.round((completed / total) * 100);
@@ -1006,7 +954,6 @@ function displaySummary(gitInfo, results) {
     log(`\n${colors.bright}Completion: ${percent}% (${completed}/${total})${colors.reset}`);
     log(createProgressBar(total, completed, ''));
     
-    // Results table
     logSubHeader('Step Results:');
     for (const result of results) {
         const icon = result.success ? symbols.check : symbols.cross;
@@ -1017,14 +964,12 @@ function displaySummary(gitInfo, results) {
         }
     }
     
-    // Git info
     if (gitInfo.pagesUrl) {
         logSubHeader('🌐 Deployment URLs:');
         log(`   ${colors.green}GitHub Pages: ${gitInfo.pagesUrl}${colors.reset}`);
         log(`   ${colors.dim}GitHub Repo: ${gitInfo.url}${colors.reset}`);
     }
     
-    // File info
     const distPath = config.build.outputDir;
     if (fileExists(distPath)) {
         const fileCount = countFiles(distPath);
@@ -1034,7 +979,6 @@ function displaySummary(gitInfo, results) {
         log(`   ${colors.dim}Size: ${formatSize(size)}${colors.reset}`);
     }
     
-    // Docker info
     if (results.some(r => r.step === 'Docker' && r.success)) {
         logSubHeader('🐳 Docker Info:');
         log(`   ${colors.dim}Image: ${config.deploy.docker.image}:${config.deploy.docker.tag}${colors.reset}`);
@@ -1044,9 +988,9 @@ function displaySummary(gitInfo, results) {
     logHeader('🎉 DEPLOYMENT COMPLETE!');
 }
 
-// ==========================================
+// ============================================
 // MAIN DEPLOYMENT FUNCTION
-// ==========================================
+// ============================================
 async function deployAll() {
     logHeader('🔮 UNIVERSAL INTEGRATOR PRO');
     log('      The Most Advanced File Integration System', 'dim');
@@ -1056,7 +1000,6 @@ async function deployAll() {
     const results = [];
     const gitInfo = getGitInfo();
     
-    // Log system info
     log(`   ${colors.dim}Platform: ${os.platform()} ${os.arch()}${colors.reset}`);
     log(`   ${colors.dim}Node: ${process.version}${colors.reset}`);
     log(`   ${colors.dim}Working Dir: ${__dirname}${colors.reset}`);
@@ -1064,9 +1007,7 @@ async function deployAll() {
         log(`   ${colors.dim}GitHub: ${gitInfo.username}/${gitInfo.repo}${colors.reset}`);
     }
     
-    // ==========================================
-    // STEP 1: Check Prerequisites
-    // ==========================================
+    // STEP 1
     try {
         const prereqs = await checkPrerequisites();
         const allPassed = Object.values(prereqs).every(v => v === true);
@@ -1085,9 +1026,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 2: Install Dependencies
-    // ==========================================
+    // STEP 2
     try {
         const success = await installDependencies();
         results.push({
@@ -1103,9 +1042,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 3: Run Tests
-    // ==========================================
+    // STEP 3
     try {
         const success = await runTests();
         results.push({
@@ -1121,9 +1058,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 4: Run Linting
-    // ==========================================
+    // STEP 4
     try {
         const success = await runLinting();
         results.push({
@@ -1139,9 +1074,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 5: Build Project
-    // ==========================================
+    // STEP 5
     try {
         const success = await buildProject();
         results.push({
@@ -1164,9 +1097,39 @@ async function deployAll() {
         process.exit(1);
     }
 
-    // ==========================================
-    // STEP 6: Check Build Output
-    // ==========================================
+    // STEP 5.5
+    try {
+        const success = await buildHub();
+        results.push({
+            step: 'Hub Build',
+            success: success,
+            message: success ? 'Hub built successfully' : 'Hub build failed',
+        });
+    } catch (error) {
+        results.push({
+            step: 'Hub Build',
+            success: false,
+            message: `Failed: ${error.message}`,
+        });
+    }
+
+    // STEP 5.6
+    try {
+        const success = await startHubWatcher();
+        results.push({
+            step: 'Hub Watcher',
+            success: success,
+            message: success ? 'Hub watcher ready' : 'Hub watcher setup failed',
+        });
+    } catch (error) {
+        results.push({
+            step: 'Hub Watcher',
+            success: false,
+            message: `Failed: ${error.message}`,
+        });
+    }
+
+    // STEP 6
     try {
         const success = await checkBuildOutput();
         results.push({
@@ -1182,9 +1145,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 7: Create Deployment Files
-    // ==========================================
+    // STEP 7
     try {
         const success = await createDeploymentFiles();
         results.push({
@@ -1200,9 +1161,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 8: Deploy to GitHub Pages
-    // ==========================================
+    // STEP 8
     try {
         const success = await deployToGitHubPages();
         results.push({
@@ -1218,9 +1177,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 9: Deploy to Docker
-    // ==========================================
+    // STEP 9
     try {
         const success = await deployToDocker();
         results.push({
@@ -1236,9 +1193,7 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // STEP 10: Deploy to Codespaces
-    // ==========================================
+    // STEP 10
     try {
         const success = await deployToCodespaces();
         results.push({
@@ -1254,12 +1209,8 @@ async function deployAll() {
         });
     }
 
-    // ==========================================
-    // DISPLAY SUMMARY
-    // ==========================================
     displaySummary(gitInfo, results);
     
-    // Return exit code based on success
     const criticalSteps = ['Prerequisites', 'Dependencies', 'Build', 'Build Output'];
     const criticalFailed = results.filter(r => criticalSteps.includes(r.step) && !r.success);
     if (criticalFailed.length > 0) {
@@ -1268,9 +1219,6 @@ async function deployAll() {
     process.exit(0);
 }
 
-// ============================================
-// RUN DEPLOYMENT
-// ============================================
 deployAll().catch((error) => {
     logError(`Deployment failed: ${error.message}`);
     process.exit(1);
