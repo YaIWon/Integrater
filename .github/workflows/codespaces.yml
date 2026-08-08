@@ -20,6 +20,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build Hub
+        run: |
+          npm run hub:build || echo "Hub build skipped"
+          npm run hub || echo "Hub initialization skipped"
+
       - name: Build
         run: npm run build
 
