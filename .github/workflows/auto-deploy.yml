@@ -1,0 +1,59 @@
+name: Auto Deploy to GitHub Pages
+
+on:
+  # Option 1: Run every hour
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  
+  # Option 2: Run every 30 minutes
+  # - cron: '*/30 * * * *'
+  
+  # Option 3: Run every 5 minutes
+  # - cron: '*/5 * * * *'
+  
+  # Option 4: Run at midnight every day
+  # - cron: '0 0 * * *'
+  
+  # Option 5: Run every Sunday at 2am
+  # - cron: '0 2 * * 0'
+  
+  # Also run on push (so it always stays up to date)
+  push:
+    branches: [ main, master ]
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build the hub index
+        run: |
+          # Generate hub-index.js with all current files
+          node hub.js --build || echo "Hub build skipped"
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "Auto-deploy: ${{ github.event_name }} triggered at $(date)"
