@@ -29,12 +29,12 @@ const logger = winston.createLogger({
         winston.format.errors({ stack: true })
     ),
     transports: [
-        new winston.transports.File({ 
-            filename: path.join('logs', 'error.log'), 
-            level: 'error' 
+        new winston.transports.File({
+            filename: path.join('logs', 'error.log'),
+            level: 'error'
         }),
-        new winston.transports.File({ 
-            filename: path.join('logs', 'combined.log') 
+        new winston.transports.File({
+            filename: path.join('logs', 'combined.log')
         })
     ]
 });
@@ -129,7 +129,7 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
     const allowedExtensions = (process.env.ALLOWED_EXTENSIONS || 'html,css,js,json,py,sol').split(',');
     const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
-    
+
     if (allowedExtensions.includes(ext)) {
         cb(null, true);
     } else {
@@ -175,7 +175,7 @@ app.post('/api/upload', upload.array('files', 100), async (req, res) => {
         }));
 
         logger.info(`Uploaded ${files.length} files`);
-        
+
         res.json({
             success: true,
             files: files,
@@ -196,7 +196,7 @@ app.get('/api/file/:id', async (req, res) => {
     try {
         const filePath = path.join(process.cwd(), 'uploads', req.params.id);
         const fileExists = await fs.access(filePath).then(() => true).catch(() => false);
-        
+
         if (!fileExists) {
             return res.status(404).json({
                 success: false,
@@ -206,7 +206,7 @@ app.get('/api/file/:id', async (req, res) => {
 
         const stats = await fs.stat(filePath);
         const ext = path.extname(filePath);
-        
+
         res.json({
             success: true,
             file: {
@@ -231,7 +231,7 @@ app.delete('/api/file/:id', async (req, res) => {
     try {
         const filePath = path.join(process.cwd(), 'uploads', req.params.id);
         await fs.unlink(filePath);
-        
+
         res.json({
             success: true,
             message: 'File deleted successfully'
@@ -248,7 +248,7 @@ app.delete('/api/file/:id', async (req, res) => {
 app.post('/api/analyze', async (req, res) => {
     try {
         const { fileIds } = req.body;
-        
+
         // Simulate analysis
         const analysis = {
             success: true,
@@ -261,7 +261,7 @@ app.post('/api/analyze', async (req, res) => {
                 timestamp: new Date().toISOString()
             }))
         };
-        
+
         res.json(analysis);
     } catch (error) {
         res.status(500).json({
@@ -276,11 +276,11 @@ app.post('/api/analyze/:id', async (req, res) => {
     try {
         const filePath = path.join(process.cwd(), 'uploads', req.params.id);
         const content = await fs.readFile(filePath, 'utf-8');
-        
+
         const lines = content.split('\n').length;
         const characters = content.length;
         const words = content.split(/\s+/).length;
-        
+
         res.json({
             success: true,
             analysis: {
@@ -308,7 +308,7 @@ app.post('/api/analyze/:id', async (req, res) => {
 app.post('/api/solidity/analyze', async (req, res) => {
     try {
         const { content, filename } = req.body;
-        
+
         const contracts = (content.match(/contract\s+(\w+)\s*{/g) || []).length;
         const functions = (content.match(/function\s+\w+\s*\(/g) || []).length;
         const events = (content.match(/event\s+\w+\s*\(/g) || []).length;
@@ -316,10 +316,10 @@ app.post('/api/solidity/analyze', async (req, res) => {
         const hasRequire = content.includes('require(');
         const hasEmit = content.includes('emit ');
         const hasOnlyOwner = content.includes('onlyOwner');
-        
+
         const versionMatch = content.match(/pragma\s+solidity\s+([^;]+);/);
         const version = versionMatch ? versionMatch[1].trim() : 'unknown';
-        
+
         res.json({
             success: true,
             analysis: {
@@ -349,7 +349,7 @@ app.post('/api/solidity/analyze', async (req, res) => {
 app.post('/api/solidity/deploy', async (req, res) => {
     try {
         const { bytecode, abi, network = 'mainnet' } = req.body;
-        
+
         const deployment = {
             success: true,
             address: `0x${Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
@@ -359,7 +359,7 @@ app.post('/api/solidity/deploy', async (req, res) => {
             gasUsed: Math.floor(Math.random() * 1000000) + 100000,
             timestamp: new Date().toISOString()
         };
-        
+
         res.json(deployment);
     } catch (error) {
         res.status(500).json({
@@ -373,7 +373,7 @@ app.post('/api/solidity/deploy', async (req, res) => {
 app.post('/api/solidity/verify', async (req, res) => {
     try {
         const { address, contractData } = req.body;
-        
+
         res.json({
             success: true,
             verified: true,
@@ -395,7 +395,7 @@ app.post('/api/solidity/verify', async (req, res) => {
 app.post('/api/solidity/compile', async (req, res) => {
     try {
         const { content, filename } = req.body;
-        
+
         res.json({
             success: true,
             abi: [
@@ -429,7 +429,7 @@ app.post('/api/solidity/compile', async (req, res) => {
 app.post('/api/integrate', async (req, res) => {
     try {
         const { files, type, name } = req.body;
-        
+
         const integration = {
             id: uuidv4(),
             name: name || `Integration ${Date.now()}`,
@@ -442,7 +442,7 @@ app.post('/api/integrate', async (req, res) => {
                 dependencies: []
             }
         };
-        
+
         res.json({
             success: true,
             integration: integration
@@ -476,7 +476,7 @@ app.get('/api/integrations', async (req, res) => {
                 createdAt: new Date().toISOString()
             }
         ];
-        
+
         res.json({
             success: true,
             integrations: integrations
@@ -504,7 +504,7 @@ app.get('/api/integrate/:id', async (req, res) => {
                 dependencies: ['react', 'react-dom']
             }
         };
-        
+
         res.json({
             success: true,
             integration: integration
@@ -540,7 +540,7 @@ app.delete('/api/integrate/:id', async (req, res) => {
 app.post('/api/module/install', async (req, res) => {
     try {
         const { name, path, version } = req.body;
-        
+
         const module = {
             id: uuidv4(),
             name: name || 'Module',
@@ -549,7 +549,7 @@ app.post('/api/module/install', async (req, res) => {
             installed: new Date().toISOString(),
             status: 'installed'
         };
-        
+
         res.json({
             success: true,
             module: module
@@ -583,7 +583,7 @@ app.get('/api/modules', async (req, res) => {
                 status: 'installed'
             }
         ];
-        
+
         res.json({
             success: true,
             modules: modules
@@ -602,7 +602,7 @@ app.get('/api/modules', async (req, res) => {
 
 app.get('/api/supported-types', (req, res) => {
     const extensions = (process.env.ALLOWED_EXTENSIONS || 'html,css,js,json,py,sol').split(',');
-    
+
     res.json({
         success: true,
         extensions: extensions,
@@ -619,11 +619,11 @@ app.get('/api/metrics', async (req, res) => {
         const uploadDir = path.join(process.cwd(), 'uploads');
         let fileCount = 0;
         let totalSize = 0;
-        
+
         try {
             const files = await fs.readdir(uploadDir);
             fileCount = files.length;
-            
+
             for (const file of files) {
                 const stats = await fs.stat(path.join(uploadDir, file));
                 totalSize += stats.size;
@@ -631,7 +631,7 @@ app.get('/api/metrics', async (req, res) => {
         } catch (e) {
             // Directory might not exist
         }
-        
+
         res.json({
             success: true,
             metrics: {
@@ -665,12 +665,32 @@ function formatSize(bytes) {
 }
 
 // ============================================
+// SPA FALLBACK ROUTE
+// ============================================
+
+// This handles all non-API routes and serves index.html
+app.get('*', (req, res) => {
+    // Skip API routes (they're already handled above)
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
+
+    // Skip static files (they're handled by express.static)
+    if (req.path.includes('.')) {
+        return res.status(404).send('File not found');
+    }
+
+    // Serve index.html for all other routes (SPA support)
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// ============================================
 // ERROR HANDLING
 // ============================================
 
 app.use((err, req, res, next) => {
     logger.error('Unhandled error:', err);
-    
+
     res.status(err.status || 500).json({
         success: false,
         error: err.message || 'Internal Server Error',
@@ -686,7 +706,7 @@ app.listen(PORT, () => {
     logger.info(`🚀 Universal Integrator Server running on port ${PORT}`);
     logger.info(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.info(`🌐 URL: http://localhost:${PORT}`);
-    
+
     // Create necessary directories
     const directories = ['uploads', 'logs', 'temp', 'data', 'data/cache'];
     directories.forEach(async (dir) => {
