@@ -1,83 +1,58 @@
 // ============================================
-// INTEGRATOR PRO - The Most Advanced Integration Engine
-// Complete with AI, Security, Performance, and More
+// INTEGRATOR PRO - Most Advanced Browser Version
+// Complete Integration Engine with 20+ Integration Types
+// Zero Node.js Dependencies - 100% Browser Compatible
 // ============================================
 
-import crypto from 'crypto';
-import { promises as fs } from 'fs';
-import path from 'path';
-
-export default class IntegratorPro {
+export default class Integrator {
     constructor(options = {}) {
         // ==========================================
-        // CORE CONFIGURATION
+        // CORE STATE
         // ==========================================
         this.integrations = [];
         this.activeIntegrations = new Map();
         this.integrationHistory = [];
-        this.performanceMetrics = {};
-        this.securityScans = {};
-        this.dependencyGraph = new Map();
         this.cache = new Map();
-        this.queue = [];
         this.processing = false;
+        this.queue = [];
         
-        // Configuration
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
         this.config = {
-            maxConcurrent: options.maxConcurrent || 5,
-            timeout: options.timeout || 30000,
-            retryAttempts: options.retryAttempts || 3,
-            enableSecurityScan: options.enableSecurityScan !== false,
-            enablePerformanceOptimization: options.enablePerformanceOptimization !== false,
-            enableTesting: options.enableTesting !== false,
-            enableDocumentation: options.enableDocumentation !== false,
-            enableAI: options.enableAI || false,
-            enableParallelProcessing: options.enableParallelProcessing || true,
             enableCaching: options.enableCaching !== false,
             enableLogging: options.enableLogging !== false,
-            enableMonitoring: options.enableMonitoring !== false
+            maxConcurrent: options.maxConcurrent || 5,
+            timeout: options.timeout || 30000
         };
         
         // ==========================================
-        // ADVANCED INTEGRATION TYPES
+        // 20+ INTEGRATION TYPES
         // ==========================================
         this.integrationTypes = {
-            // Web & Frontend
             'app': this.integrateApp.bind(this),
             'web': this.integrateWeb.bind(this),
             'spa': this.integrateSPA.bind(this),
             'pwa': this.integratePWA.bind(this),
             'ssr': this.integrateSSR.bind(this),
             'static': this.integrateStatic.bind(this),
-            
-            // Backend & API
             'service': this.integrateService.bind(this),
             'api': this.integrateAPI.bind(this),
             'microservice': this.integrateMicroservice.bind(this),
             'graphql': this.integrateGraphQL.bind(this),
-            'websocket': this.integrateWebSocket.bind(this),
-            
-            // Smart Contracts & Blockchain
             'solidity': this.integrateSolidity.bind(this),
             'blockchain': this.integrateBlockchain.bind(this),
             'dapp': this.integrateDApp.bind(this),
             'nft': this.integrateNFT.bind(this),
             'defi': this.integrateDeFi.bind(this),
-            
-            // Data & AI
             'database': this.integrateDatabase.bind(this),
             'ml': this.integrateML.bind(this),
             'ai': this.integrateAI.bind(this),
             'analytics': this.integrateAnalytics.bind(this),
-            'bigdata': this.integrateBigData.bind(this),
-            
-            // Desktop & Mobile
             'desktop': this.integrateDesktop.bind(this),
             'mobile': this.integrateMobile.bind(this),
             'electron': this.integrateElectron.bind(this),
             'react-native': this.integrateReactNative.bind(this),
-            
-            // Other
             'tool': this.integrateTool.bind(this),
             'plugin': this.integratePlugin.bind(this),
             'library': this.integrateLibrary.bind(this),
@@ -88,58 +63,43 @@ export default class IntegratorPro {
         };
         
         // ==========================================
-        // DEPENDENCY RESOLUTION
+        // DETECTION PATTERNS
         // ==========================================
-        this.dependencyResolver = {
-            registry: new Map(),
-            conflicts: new Map(),
-            resolved: new Set()
+        this.patterns = {
+            routing: /router|Route|Routes|routing/i,
+            state: /redux|store|mobx|zustand|state/i,
+            api: /api|endpoint|axios|fetch/i,
+            lazy: /lazy|React\.lazy|import\(/i,
+            auth: /auth|jwt|token|login|logout/i,
+            database: /db|database|sql|mongodb|postgres/i,
+            caching: /cache|redis/i,
+            validation: /validate|validator|schema|joi/i,
+            graphql: /graphql|gql|schema|resolver|subscription/i,
+            websocket: /socket|ws|wss/i,
+            web3: /web3|ethers|ethereum|blockchain/i,
+            nft: /nft|erc721|erc1155|tokenURI/i,
+            defi: /defi|swap|pool|liquidity|farm|stake/i,
+            ml: /train|model|inference|tensorflow|pytorch/i,
+            ai: /ai|llm|openai|agent|rag|vector/i,
+            iot: /sensor|actuator|mqtt|gpio/i,
+            game: /game|physics|canvas|phaser|pixi/i,
+            cli: /cli|command|arg|flag|help/i,
+            pwa: /manifest|service-worker|offline/i,
+            ssr: /server|ssr|hydrate/i,
+            electron: /electron|main\.js|renderer/i
         };
         
-        // ==========================================
-        // SECURITY ENGINE
-        // ==========================================
-        this.securityEngine = {
-            vulnerabilities: [],
-            licenses: new Map(),
-            patterns: this.loadSecurityPatterns()
-        };
+        this.log('🚀 Integrator Pro initialized (Most Advanced Version)');
+        this.log(`📦 Integration Types: ${Object.keys(this.integrationTypes).length}`);
         
-        // ==========================================
-        // PERFORMANCE ENGINE
-        // ==========================================
-        this.performanceEngine = {
-            optimizations: [],
-            bundleSizes: new Map(),
-            loadTimes: new Map()
-        };
-        
-        // ==========================================
-        // AI ENGINE
-        // ==========================================
-        this.aiEngine = {
-            enabled: this.config.enableAI,
-            suggestions: [],
-            predictions: new Map()
-        };
-        
-        console.log('🚀 Integrator Pro initialized (Most Advanced Version)');
-        console.log(`📦 Integration Types: ${Object.keys(this.integrationTypes).length}`);
-        console.log(`⚙️  Features: ${Object.keys(this.config).filter(k => this.config[k]).length}`);
-        
-        if (this.config.enableLogging) {
-            console.log('📝 Logging enabled');
-        }
-        if (this.config.enableMonitoring) {
-            console.log('📊 Monitoring enabled');
-        }
-        if (this.config.enableAI) {
-            console.log('🧠 AI Engine enabled');
+        // Start cache cleanup
+        if (this.config.enableCaching) {
+            setInterval(() => this.cleanCache(), 600000); // Clean every 10 minutes
         }
     }
 
     // ==========================================
-    // MAIN INTEGRATION METHOD (Enhanced)
+    // MAIN INTEGRATION METHOD
     // ==========================================
     
     async integrate(files, options = {}) {
@@ -149,11 +109,11 @@ export default class IntegratorPro {
         
         // Check cache
         if (this.config.enableCaching) {
-            const cacheKey = this.generateCacheKey(files, options);
+            const cacheKey = this.generateCacheKey(files);
             if (this.cache.has(cacheKey)) {
                 const cached = this.cache.get(cacheKey);
-                if (Date.now() - cached.timestamp < 3600000) { // 1 hour cache
-                    console.log(`📦 Cache hit for integration ${integrationId}`);
+                if (Date.now() - cached.timestamp < 3600000) {
+                    this.log(`📦 Cache hit for ${integrationId}`);
                     return cached.result;
                 }
             }
@@ -164,62 +124,22 @@ export default class IntegratorPro {
         
         try {
             // Step 1: Validate files
-            const validationResult = await this.validateFiles(files);
-            if (!validationResult.success) {
-                throw new Error(`Validation failed: ${validationResult.errors.join(', ')}`);
+            const validation = this.validateFiles(files);
+            if (!validation.success) {
+                throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
             }
             
             // Step 2: Analyze dependencies
-            const dependencyAnalysis = await this.analyzeDependencies(files);
-            if (dependencyAnalysis.conflicts.length > 0) {
-                this.log(`⚠️ Found ${dependencyAnalysis.conflicts.length} dependency conflicts`);
-            }
+            const dependencies = this.analyzeDependencies(files);
             
-            // Step 3: Security scan
-            let securityResult = null;
-            if (this.config.enableSecurityScan) {
-                securityResult = await this.scanForSecurity(files);
-                if (securityResult.vulnerabilities.length > 0) {
-                    this.log(`🛡️ Found ${securityResult.vulnerabilities.length} security issues`);
-                }
-            }
+            // Step 3: Analyze complexity
+            const complexity = this.calculateComplexity(files);
             
-            // Step 4: Performance analysis
-            let performanceResult = null;
-            if (this.config.enablePerformanceOptimization) {
-                performanceResult = await this.analyzePerformance(files);
-                this.log(`⚡ Performance optimization suggestions: ${performanceResult.suggestions.length}`);
-            }
-            
-            // Step 5: Execute integration
+            // Step 4: Execute integration
             const handler = this.integrationTypes[type] || this.integrationTypes.default;
             const result = await handler(files, options);
             
-            // Step 6: Apply optimizations
-            let optimizedResult = result;
-            if (this.config.enablePerformanceOptimization) {
-                optimizedResult = await this.optimizeIntegration(result, performanceResult);
-            }
-            
-            // Step 7: Generate tests
-            let tests = null;
-            if (this.config.enableTesting) {
-                tests = await this.generateTests(files, result);
-            }
-            
-            // Step 8: Generate documentation
-            let documentation = null;
-            if (this.config.enableDocumentation) {
-                documentation = await this.generateDocumentation(files, result);
-            }
-            
-            // Step 9: AI analysis
-            let aiAnalysis = null;
-            if (this.config.enableAI) {
-                aiAnalysis = await this.aiAnalyze(files, result);
-            }
-            
-            // Build integration result
+            // Step 5: Build full integration
             const integration = {
                 id: integrationId,
                 type: type,
@@ -228,24 +148,22 @@ export default class IntegratorPro {
                 timestamp: new Date().toISOString(),
                 duration: Date.now() - startTime,
                 status: 'completed',
+                name: options.name || this.generateName(type),
                 
                 // Analysis results
-                dependencies: dependencyAnalysis,
-                security: securityResult,
-                performance: performanceResult,
-                tests: tests,
-                documentation: documentation,
-                aiAnalysis: aiAnalysis,
+                validation: validation,
+                dependencies: dependencies,
+                complexity: complexity,
                 
-                // Integration result
-                result: optimizedResult,
+                // Result
+                result: result,
                 
                 // Metadata
                 metadata: {
-                    validation: validationResult,
                     totalSize: files.reduce((sum, f) => sum + (f.size || 0), 0),
                     fileTypes: this.getFileTypeDistribution(files),
-                    complexity: this.calculateComplexity(files)
+                    hasBinaries: files.some(f => f.isBinary),
+                    hasSolidity: files.some(f => f.extension === 'sol')
                 }
             };
             
@@ -256,20 +174,18 @@ export default class IntegratorPro {
                 id: integrationId,
                 type: type,
                 timestamp: new Date().toISOString(),
-                duration: integration.duration,
-                files: files.length
+                duration: integration.duration
             });
             
             // Cache result
             if (this.config.enableCaching) {
-                const cacheKey = this.generateCacheKey(files, options);
+                const cacheKey = this.generateCacheKey(files);
                 this.cache.set(cacheKey, {
                     result: integration,
                     timestamp: Date.now()
                 });
             }
             
-            // Log success
             this.log(`✅ Integration ${integrationId} completed in ${integration.duration}ms`);
             
             return {
@@ -281,8 +197,6 @@ export default class IntegratorPro {
             
         } catch (error) {
             this.log(`❌ Integration ${integrationId} failed: ${error.message}`);
-            this.log(`Stack: ${error.stack}`);
-            
             return {
                 success: false,
                 error: error.message,
@@ -293,14 +207,14 @@ export default class IntegratorPro {
     }
 
     // ==========================================
-    // ADVANCED INTEGRATION HANDLERS
+    // 30+ INTEGRATION HANDLERS
     // ==========================================
-    
+
     async integrateApp(files, options = {}) {
-        const htmlFiles = files.filter(f => f.analysis?.type === 'html' || f.extension === 'html');
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const cssFiles = files.filter(f => f.analysis?.type === 'css' || f.extension === 'css');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const htmlFiles = files.filter(f => this.isType(f, 'html'));
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const cssFiles = files.filter(f => this.isType(f, 'css'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'app',
@@ -319,29 +233,40 @@ export default class IntegratorPro {
                 styles: cssFiles.map(f => f.name),
                 configs: jsonFiles.map(f => f.name)
             },
-            dependencies: await this.analyzeDependencies(files),
+            dependencies: this.findDependencies(files),
             bundleSize: files.reduce((sum, f) => sum + (f.size || 0), 0),
-            components: this.extractComponents(files)
+            components: this.extractComponents(files),
+            hasRouting: this.detectPattern(files, 'routing'),
+            hasState: this.detectPattern(files, 'state'),
+            hasAPI: this.detectPattern(files, 'api')
         };
+    }
+
+    async integrateWeb(files, options = {}) {
+        const result = await this.integrateApp(files, options);
+        result.type = 'web';
+        result.pages = files.filter(f => this.isType(f, 'html')).map(f => f.name);
+        result.isStatic = true;
+        return result;
     }
 
     async integrateSPA(files, options = {}) {
         const result = await this.integrateApp(files, options);
         result.type = 'spa';
-        result.routing = this.detectRouting(files);
-        result.stateManagement = this.detectStateManagement(files);
-        result.apiClients = this.detectAPIClients(files);
-        result.hasLazyLoading = this.detectLazyLoading(files);
+        result.routing = this.detectPattern(files, 'routing');
+        result.stateManagement = this.detectPattern(files, 'state');
+        result.hasLazyLoading = this.detectPattern(files, 'lazy');
+        result.hasAPIClients = this.detectPattern(files, 'api');
         return result;
     }
 
     async integratePWA(files, options = {}) {
         const result = await this.integrateSPA(files, options);
         result.type = 'pwa';
-        result.manifest = this.findManifest(files);
-        result.serviceWorker = this.findServiceWorker(files);
-        result.offlineSupport = result.serviceWorker !== null;
-        result.hasPushNotifications = this.detectPushNotifications(files);
+        result.hasManifest = files.some(f => f.name === 'manifest.json');
+        result.hasServiceWorker = files.some(f => f.name.includes('service-worker') || f.name.includes('sw.'));
+        result.offlineSupport = result.hasServiceWorker;
+        result.hasPushNotifications = this.detectPattern(files, 'notification');
         return result;
     }
 
@@ -349,17 +274,17 @@ export default class IntegratorPro {
         const result = await this.integrateApp(files, options);
         result.type = 'ssr';
         result.hasServerSideRendering = true;
-        result.serverEntry = this.findServerEntry(files);
-        result.clientEntry = this.findClientEntry(files);
+        result.serverEntry = files.find(f => f.name.includes('server') && f.name.includes('entry'))?.name;
+        result.clientEntry = files.find(f => f.name.includes('client') || f.name === 'index.js')?.name;
         result.hydrationEnabled = true;
         return result;
     }
 
     async integrateStatic(files, options = {}) {
-        const htmlFiles = files.filter(f => f.analysis?.type === 'html' || f.extension === 'html');
-        const cssFiles = files.filter(f => f.analysis?.type === 'css' || f.extension === 'css');
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const imageFiles = files.filter(f => f.analysis?.type === 'image');
+        const htmlFiles = files.filter(f => this.isType(f, 'html'));
+        const cssFiles = files.filter(f => this.isType(f, 'css'));
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const imageFiles = files.filter(f => this.isType(f, 'image'));
         
         return {
             type: 'static',
@@ -384,8 +309,8 @@ export default class IntegratorPro {
     }
 
     async integrateService(files, options = {}) {
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'service',
@@ -396,21 +321,22 @@ export default class IntegratorPro {
                 json: jsonFiles.length,
                 total: files.length
             },
-            endpoints: await this.findEndpoints(files),
-            dependencies: await this.analyzeDependencies(files),
-            hasAuthentication: this.detectAuthentication(files),
-            hasDatabase: this.detectDatabase(files),
-            apiVersion: this.detectAPIVersion(files)
+            endpoints: this.findEndpoints(files),
+            dependencies: this.findDependencies(files),
+            hasAuthentication: this.detectPattern(files, 'auth'),
+            hasDatabase: this.detectPattern(files, 'database'),
+            hasCaching: this.detectPattern(files, 'caching'),
+            hasValidation: this.detectPattern(files, 'validation')
         };
     }
 
     async integrateAPI(files, options = {}) {
         const result = await this.integrateService(files, options);
         result.type = 'api';
-        result.rateLimiting = this.detectRateLimiting(files);
-        result.caching = this.detectCaching(files);
-        result.validation = this.detectValidation(files);
-        result.hasOpenAPI = this.detectOpenAPI(files);
+        result.rateLimiting = this.detectPattern(files, 'rate-limit');
+        result.caching = this.detectPattern(files, 'caching');
+        result.validation = this.detectPattern(files, 'validation');
+        result.hasOpenAPI = files.some(f => f.name.includes('openapi') || f.name.includes('swagger'));
         return result;
     }
 
@@ -418,45 +344,29 @@ export default class IntegratorPro {
         const result = await this.integrateService(files, options);
         result.type = 'microservice';
         result.serviceName = options.name || 'microservice';
-        result.port = this.detectPort(files);
-        result.healthCheck = this.detectHealthCheck(files);
-        result.hasMessageQueue = this.detectMessageQueue(files);
-        result.hasServiceDiscovery = this.detectServiceDiscovery(files);
+        result.port = this.findPort(files) || 3000;
+        result.hasHealthCheck = this.detectPattern(files, 'health');
+        result.hasMessageQueue = this.detectPattern(files, 'queue');
         return result;
     }
 
     async integrateGraphQL(files, options = {}) {
         const result = await this.integrateService(files, options);
         result.type = 'graphql';
-        result.schema = this.findGraphQLSchema(files);
-        result.resolvers = this.findGraphQLResolvers(files);
-        result.hasSubscriptions = this.detectGraphQLSubscriptions(files);
-        result.hasDirectives = this.detectGraphQLDirectives(files);
-        return result;
-    }
-
-    async integrateWebSocket(files, options = {}) {
-        const result = await this.integrateService(files, options);
-        result.type = 'websocket';
-        result.hasWebSocket = true;
-        result.protocol = 'wss';
-        result.channels = this.detectWebSocketChannels(files);
-        result.heartbeat = this.detectHeartbeat(files);
+        result.hasSchema = files.some(f => f.content?.includes('type') || f.content?.includes('schema'));
+        result.hasResolvers = this.detectPattern(files, 'graphql');
+        result.hasSubscriptions = this.detectPattern(files, 'subscription');
         return result;
     }
 
     async integrateSolidity(files, options = {}) {
-        const solFiles = files.filter(f => f.analysis?.type === 'solidity' || f.extension === 'sol');
+        const solFiles = files.filter(f => f.extension === 'sol' || f.type === 'solidity');
         const contractData = solFiles.map(f => ({
-            name: f.analysis?.name || f.name.replace(/\.sol$/, ''),
-            functions: f.analysis?.functions || [],
-            events: f.analysis?.events || [],
-            imports: f.analysis?.imports || [],
-            version: f.analysis?.solidityVersion || 'unknown',
-            hasRequire: f.analysis?.hasRequire || false,
-            hasEmit: f.analysis?.hasEmit || false,
-            hasOnlyOwner: f.analysis?.hasOnlyOwner || false,
-            securityScore: this.calculateSecurityScore(f)
+            name: f.name.replace(/\.sol$/, ''),
+            hasRequire: f.content?.includes('require(') || false,
+            hasEmit: f.content?.includes('emit ') || false,
+            hasOnlyOwner: f.content?.includes('onlyOwner') || false,
+            version: this.extractSolidityVersion(f.content)
         }));
         
         return {
@@ -464,29 +374,22 @@ export default class IntegratorPro {
             name: options.name || 'Smart Contract Suite',
             contracts: contractData,
             totalContracts: contractData.length,
-            imports: [...new Set(contractData.flatMap(c => c.imports))],
-            versions: [...new Set(contractData.map(c => c.version))],
             hasSecurityFeatures: contractData.some(c => c.hasRequire),
             hasAccessControl: contractData.some(c => c.hasOnlyOwner),
             hasEvents: contractData.some(c => c.hasEmit),
             deploymentReady: true,
-            averageSecurityScore: contractData.reduce((sum, c) => sum + (c.securityScore || 0), 0) / contractData.length,
-            deploymentInfo: {
-                network: options.network || 'mainnet',
-                gasLimit: options.gasLimit || 3000000,
-                estimatedCost: this.estimateDeploymentCost(contractData)
-            }
+            averageSecurityScore: contractData.reduce((sum, c) => sum + (c.hasRequire ? 20 : 0) + (c.hasOnlyOwner ? 15 : 0), 0) / (contractData.length || 1),
+            version: this.extractSolidityVersion(solFiles[0]?.content)
         };
     }
 
     async integrateBlockchain(files, options = {}) {
         const result = await this.integrateSolidity(files, options);
         result.type = 'blockchain';
-        result.hasSmartContracts = true;
-        result.hasTokens = this.detectTokens(files);
-        result.hasNFTs = this.detectNFTs(files);
-        result.hasDeFi = this.detectDeFi(files);
-        result.networks = this.detectSupportedNetworks(files);
+        result.hasTokens = this.detectPattern(files, 'token');
+        result.hasNFTs = this.detectPattern(files, 'nft');
+        result.hasDeFi = this.detectPattern(files, 'defi');
+        result.hasWeb3 = this.detectPattern(files, 'web3');
         return result;
     }
 
@@ -504,9 +407,8 @@ export default class IntegratorPro {
                 scripts: appResult.structure.scripts,
                 styles: appResult.structure.styles
             },
-            web3Integration: this.detectWeb3Integration(files),
-            walletIntegration: this.detectWalletIntegration(files),
-            hasIPFS: this.detectIPFS(files),
+            hasWeb3: this.detectPattern(files, 'web3'),
+            hasWallet: this.detectPattern(files, 'wallet'),
             deploymentReady: true
         };
     }
@@ -514,27 +416,25 @@ export default class IntegratorPro {
     async integrateNFT(files, options = {}) {
         const result = await this.integrateSolidity(files, options);
         result.type = 'nft';
-        result.hasNFTStandard = this.detectNFTStandard(files);
-        result.hasMetadata = this.detectNFTMetadata(files);
-        result.hasRoyalties = this.detectRoyalties(files);
-        result.hasMinting = this.detectMinting(files);
+        result.hasNFTStandard = this.detectPattern(files, 'nft');
+        result.hasMetadata = files.some(f => f.content?.includes('metadata') || f.content?.includes('tokenURI'));
+        result.hasMinting = files.some(f => f.content?.includes('mint'));
         return result;
     }
 
     async integrateDeFi(files, options = {}) {
         const result = await this.integrateSolidity(files, options);
         result.type = 'defi';
-        result.hasLending = this.detectLending(files);
-        result.hasBorrowing = this.detectBorrowing(files);
-        result.hasStaking = this.detectStaking(files);
-        result.hasYieldFarming = this.detectYieldFarming(files);
-        result.hasLiquidityPools = this.detectLiquidityPools(files);
+        result.hasLending = this.detectPattern(files, 'lending');
+        result.hasStaking = this.detectPattern(files, 'staking');
+        result.hasLiquidity = this.detectPattern(files, 'liquidity');
+        result.hasYieldFarming = this.detectPattern(files, 'yield');
         return result;
     }
 
     async integrateDatabase(files, options = {}) {
-        const sqlFiles = files.filter(f => f.analysis?.type === 'sql' || f.extension === 'sql');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const sqlFiles = files.filter(f => this.isType(f, 'sql'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'database',
@@ -542,17 +442,16 @@ export default class IntegratorPro {
             sql: sqlFiles.length,
             json: jsonFiles.length,
             totalFiles: files.length,
-            hasMigrations: this.detectMigrations(files),
-            hasSeeds: this.detectSeeds(files),
-            hasBackups: this.detectBackups(files),
+            hasMigrations: files.some(f => f.name.includes('migration')),
+            hasSeeds: files.some(f => f.name.includes('seed')),
             databaseType: this.detectDatabaseType(files)
         };
     }
 
     async integrateML(files, options = {}) {
-        const pyFiles = files.filter(f => f.analysis?.type === 'python' || f.extension === 'py');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
-        const csvFiles = files.filter(f => f.analysis?.type === 'csv' || f.extension === 'csv');
+        const pyFiles = files.filter(f => this.isType(f, 'py'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
+        const csvFiles = files.filter(f => this.isType(f, 'csv'));
         
         return {
             type: 'ml',
@@ -561,11 +460,8 @@ export default class IntegratorPro {
             json: jsonFiles.length,
             csv: csvFiles.length,
             totalFiles: files.length,
-            hasTraining: this.detectTraining(files),
-            hasInference: this.detectInference(files),
-            hasEvaluation: this.detectEvaluation(files),
-            hasDataProcessing: this.detectDataProcessing(files),
-            modelType: this.detectModelType(files),
+            hasTraining: this.detectPattern(files, 'train'),
+            hasModel: this.detectPattern(files, 'model'),
             framework: this.detectMLFramework(files)
         };
     }
@@ -573,18 +469,17 @@ export default class IntegratorPro {
     async integrateAI(files, options = {}) {
         const result = await this.integrateML(files, options);
         result.type = 'ai';
-        result.hasLLM = this.detectLLM(files);
-        result.hasRAG = this.detectRAG(files);
-        result.hasAgents = this.detectAgents(files);
-        result.hasVectorDB = this.detectVectorDB(files);
-        result.hasEmbeddings = this.detectEmbeddings(files);
+        result.hasLLM = this.detectPattern(files, 'llm');
+        result.hasRAG = this.detectPattern(files, 'rag');
+        result.hasAgents = this.detectPattern(files, 'agent');
+        result.hasVectorDB = this.detectPattern(files, 'vector');
         return result;
     }
 
     async integrateAnalytics(files, options = {}) {
-        const pyFiles = files.filter(f => f.analysis?.type === 'python' || f.extension === 'py');
-        const csvFiles = files.filter(f => f.analysis?.type === 'csv' || f.extension === 'csv');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const pyFiles = files.filter(f => this.isType(f, 'py'));
+        const csvFiles = files.filter(f => this.isType(f, 'csv'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'analytics',
@@ -593,89 +488,75 @@ export default class IntegratorPro {
             csv: csvFiles.length,
             json: jsonFiles.length,
             totalFiles: files.length,
-            hasDashboards: this.detectDashboards(files),
-            hasReports: this.detectReports(files),
-            hasVisualizations: this.detectVisualizations(files)
+            hasDashboards: files.some(f => f.content?.includes('dashboard')),
+            hasReports: files.some(f => f.name.includes('report')),
+            hasVisualizations: files.some(f => f.content?.includes('plot') || f.content?.includes('chart'))
         };
     }
 
-    async integrateBigData(files, options = {}) {
-        const result = await this.integrateAnalytics(files, options);
-        result.type = 'bigdata';
-        result.hasSpark = this.detectSpark(files);
-        result.hasHadoop = this.detectHadoop(files);
-        result.hasKafka = this.detectKafka(files);
-        result.hasDatabricks = this.detectDatabricks(files);
-        result.dataVolume = this.estimateDataVolume(files);
-        return result;
-    }
-
     async integrateDesktop(files, options = {}) {
-        const htmlFiles = files.filter(f => f.analysis?.type === 'html' || f.extension === 'html');
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const cssFiles = files.filter(f => f.analysis?.type === 'css' || f.extension === 'css');
+        const htmlFiles = files.filter(f => this.isType(f, 'html'));
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const cssFiles = files.filter(f => this.isType(f, 'css'));
         
         return {
             type: 'desktop',
             name: options.name || 'Desktop Application',
-            entry: this.findDesktopEntry(files),
+            entry: files.find(f => f.name.includes('main'))?.name || 'index.html',
             files: {
                 html: htmlFiles.length,
                 js: jsFiles.length,
                 css: cssFiles.length,
                 total: files.length
             },
-            hasNativeIntegration: this.detectNativeIntegration(files),
-            hasFileSystem: this.detectFileSystem(files),
-            hasSystemTray: this.detectSystemTray(files),
+            hasNativeIntegration: this.detectPattern(files, 'native'),
+            hasFileSystem: this.detectPattern(files, 'fs'),
             platform: options.platform || 'cross-platform'
         };
     }
 
     async integrateMobile(files, options = {}) {
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'mobile',
             name: options.name || 'Mobile Application',
-            entry: this.findMobileEntry(files),
+            entry: files.find(f => f.name.includes('App') || f.name.includes('app'))?.name || 'index.js',
             files: {
                 js: jsFiles.length,
                 json: jsonFiles.length,
                 total: files.length
             },
             platform: this.detectMobilePlatform(files),
-            hasNativeFeatures: this.detectNativeFeatures(files),
-            hasPushNotifications: this.detectPushNotifications(files),
-            hasOfflineSupport: this.detectOfflineSupport(files)
+            hasNativeFeatures: this.detectPattern(files, 'native'),
+            hasPushNotifications: this.detectPattern(files, 'notification')
         };
     }
 
     async integrateElectron(files, options = {}) {
         const result = await this.integrateDesktop(files, options);
         result.type = 'electron';
-        result.mainProcess = this.findMainProcess(files);
-        result.rendererProcess = this.findRendererProcess(files);
-        result.hasNativeModules = this.detectNativeModules(files);
-        result.hasAutoUpdater = this.detectAutoUpdater(files);
+        result.mainProcess = files.find(f => f.name.includes('main'))?.name;
+        result.rendererProcess = files.find(f => f.name.includes('renderer'))?.name;
+        result.hasNativeModules = this.detectPattern(files, 'native');
+        result.hasAutoUpdater = this.detectPattern(files, 'autoupdater');
         return result;
     }
 
     async integrateReactNative(files, options = {}) {
         const result = await this.integrateMobile(files, options);
         result.type = 'react-native';
-        result.hasExpo = this.detectExpo(files);
-        result.hasNativeModules = this.detectNativeModules(files);
-        result.hasAnimations = this.detectAnimations(files);
-        result.hasNavigation = this.detectNavigation(files);
+        result.hasExpo = files.some(f => f.content?.includes('expo'));
+        result.hasNativeModules = this.detectPattern(files, 'native');
+        result.hasNavigation = this.detectPattern(files, 'navigation');
         return result;
     }
 
     async integrateTool(files, options = {}) {
-        const pyFiles = files.filter(f => f.analysis?.type === 'python' || f.extension === 'py');
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const shFiles = files.filter(f => f.analysis?.type === 'shell' || f.extension === 'sh');
+        const pyFiles = files.filter(f => this.isType(f, 'py'));
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const shFiles = files.filter(f => this.isType(f, 'sh'));
         
         return {
             type: 'tool',
@@ -688,13 +569,13 @@ export default class IntegratorPro {
                 total: files.length
             },
             scripts: [...pyFiles.map(f => f.name), ...jsFiles.map(f => f.name), ...shFiles.map(f => f.name)],
-            dependencies: await this.analyzeDependencies(files)
+            dependencies: this.findDependencies(files)
         };
     }
 
     async integratePlugin(files, options = {}) {
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'plugin',
@@ -705,47 +586,44 @@ export default class IntegratorPro {
                 json: jsonFiles.length,
                 total: files.length
             },
-            types: [...new Set(files.map(f => f.analysis?.type || f.extension || 'unknown'))],
-            hasAPIs: this.detectPluginAPIs(files),
-            hasHooks: this.detectHooks(files)
+            types: [...new Set(files.map(f => f.extension || 'unknown'))],
+            hasAPIs: this.detectPattern(files, 'api'),
+            hasHooks: this.detectPattern(files, 'hook')
         };
     }
 
     async integrateLibrary(files, options = {}) {
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'library',
             name: options.name || 'Library',
-            entry: this.findLibraryEntry(files),
+            entry: files.find(f => f.name.includes('index') || f.name.includes('main'))?.name || 'index.js',
             files: {
                 js: jsFiles.length,
                 json: jsonFiles.length,
                 total: files.length
             },
             exports: this.findExports(files),
-            dependencies: await this.analyzeDependencies(files),
-            hasTests: this.detectTests(files),
-            hasDocs: this.detectDocs(files)
+            dependencies: this.findDependencies(files),
+            hasTests: files.some(f => f.name.includes('test') || f.name.includes('spec')),
+            hasDocs: files.some(f => f.name.includes('README') || f.name.includes('docs'))
         };
     }
 
     async integrateCLI(files, options = {}) {
         const result = await this.integrateTool(files, options);
         result.type = 'cli';
-        result.commands = this.findCLICommands(files);
-        result.flags = this.findCLIFlags(files);
-        result.hasHelp = this.detectHelp(files);
-        result.hasVersion = this.detectVersion(files);
+        result.hasHelp = this.detectPattern(files, 'help');
+        result.hasVersion = this.detectPattern(files, 'version');
         return result;
     }
 
     async integrateGame(files, options = {}) {
-        const jsFiles = files.filter(f => f.analysis?.type === 'javascript' || f.extension === 'js');
-        const htmlFiles = files.filter(f => f.analysis?.type === 'html' || f.extension === 'html');
-        const imageFiles = files.filter(f => f.analysis?.type === 'image');
-        const audioFiles = files.filter(f => f.analysis?.type === 'audio');
+        const jsFiles = files.filter(f => this.isType(f, 'js'));
+        const htmlFiles = files.filter(f => this.isType(f, 'html'));
+        const imageFiles = files.filter(f => this.isType(f, 'image'));
         
         return {
             type: 'game',
@@ -755,20 +633,18 @@ export default class IntegratorPro {
                 js: jsFiles.length,
                 html: htmlFiles.length,
                 images: imageFiles.length,
-                audio: audioFiles.length,
                 total: files.length
             },
-            hasPhysics: this.detectPhysics(files),
-            hasAI: this.detectGameAI(files),
-            hasAudio: audioFiles.length > 0,
+            hasPhysics: this.detectPattern(files, 'physics'),
+            hasGameAI: this.detectPattern(files, 'ai'),
             hasGraphics: imageFiles.length > 0,
             engine: this.detectGameEngine(files)
         };
     }
 
     async integrateIoT(files, options = {}) {
-        const pyFiles = files.filter(f => f.analysis?.type === 'python' || f.extension === 'py');
-        const jsonFiles = files.filter(f => f.analysis?.type === 'json' || f.extension === 'json');
+        const pyFiles = files.filter(f => this.isType(f, 'py'));
+        const jsonFiles = files.filter(f => this.isType(f, 'json'));
         
         return {
             type: 'iot',
@@ -779,11 +655,9 @@ export default class IntegratorPro {
                 json: jsonFiles.length,
                 total: files.length
             },
-            hasSensors: this.detectSensors(files),
-            hasActuators: this.detectActuators(files),
-            hasMQTT: this.detectMQTT(files),
-            hasGPIO: this.detectGPIO(files),
-            hasCloud: this.detectCloudIntegration(files),
+            hasSensors: this.detectPattern(files, 'sensor'),
+            hasMQTT: this.detectPattern(files, 'mqtt'),
+            hasGPIO: this.detectPattern(files, 'gpio'),
             deviceType: this.detectDeviceType(files)
         };
     }
@@ -793,395 +667,294 @@ export default class IntegratorPro {
             type: 'default',
             name: options.name || 'General Integration',
             files: files.map(f => f.name),
-            types: [...new Set(files.map(f => f.analysis?.type || f.extension || 'unknown'))],
+            types: [...new Set(files.map(f => f.extension || 'unknown'))],
             size: files.reduce((sum, f) => sum + (f.size || 0), 0),
             count: files.length
         };
     }
 
     // ==========================================
-    // TYPE DETECTION (Enhanced)
+    // TYPE DETECTION ENGINE
     // ==========================================
-    
+
     detectIntegrationType(files) {
-        const types = files.map(f => f.analysis?.type || f.extension || 'unknown');
-        const fileNames = files.map(f => f.name);
+        const types = files.map(f => f.extension || 'unknown');
+        const names = files.map(f => f.name);
         
         // Blockchain / Smart Contracts
-        if (types.some(t => t === 'solidity' || t === 'sol' || t === 'vyper')) {
-            return 'solidity';
-        }
-        if (fileNames.some(n => n.includes('DApp') || n.includes('dapp') || n.includes('web3'))) {
-            return 'dapp';
-        }
-        if (fileNames.some(n => n.includes('NFT') || n.includes('nft'))) {
-            return 'nft';
-        }
-        if (fileNames.some(n => n.includes('DeFi') || n.includes('defi') || n.includes('lending') || n.includes('borrow'))) {
-            return 'defi';
-        }
-        if (fileNames.some(n => n.includes('blockchain') || n.includes('ethereum') || n.includes('web3'))) {
-            return 'blockchain';
-        }
+        if (types.some(t => t === 'sol' || t === 'vyper')) return 'solidity';
+        if (names.some(n => n.includes('DApp') || n.includes('dapp'))) return 'dapp';
+        if (names.some(n => n.includes('NFT') || n.includes('nft'))) return 'nft';
+        if (names.some(n => n.includes('DeFi') || n.includes('defi'))) return 'defi';
+        if (names.some(n => n.includes('blockchain') || n.includes('web3'))) return 'blockchain';
         
         // Web / Frontend
-        if (types.some(t => t === 'html') && types.some(t => t === 'js' || t === 'javascript')) {
-            if (fileNames.some(n => n.includes('manifest.json') || n.includes('service-worker'))) {
-                return 'pwa';
-            }
-            if (fileNames.some(n => n.includes('server') || n.includes('ssr'))) {
-                return 'ssr';
-            }
-            if (fileNames.some(n => n.includes('spa') || n.includes('router'))) {
-                return 'spa';
-            }
+        if (types.some(t => t === 'html') && types.some(t => t === 'js')) {
+            if (names.some(n => n.includes('manifest.json') || n.includes('service-worker'))) return 'pwa';
+            if (names.some(n => n.includes('server') || n.includes('ssr'))) return 'ssr';
+            if (names.some(n => n.includes('spa') || n.includes('router'))) return 'spa';
             return 'app';
         }
         if (types.some(t => t === 'html') && types.some(t => t === 'css')) {
-            if (types.every(t => t === 'html' || t === 'css' || t === 'image')) {
-                return 'static';
-            }
+            if (types.every(t => t === 'html' || t === 'css' || t === 'png' || t === 'jpg' || t === 'svg')) return 'static';
             return 'web';
         }
         
         // Service / API
-        if (types.some(t => t === 'js' || t === 'javascript') && types.some(t => t === 'json')) {
-            if (fileNames.some(n => n.includes('graphql') || n.includes('schema'))) {
-                return 'graphql';
-            }
-            if (fileNames.some(n => n.includes('microservice') || n.includes('service'))) {
-                return 'microservice';
-            }
-            if (fileNames.some(n => n.includes('api') || n.includes('endpoint'))) {
-                return 'api';
-            }
-            if (fileNames.some(n => n.includes('socket') || n.includes('ws'))) {
-                return 'websocket';
-            }
+        if (types.some(t => t === 'js') && types.some(t => t === 'json')) {
+            if (names.some(n => n.includes('graphql'))) return 'graphql';
+            if (names.some(n => n.includes('microservice'))) return 'microservice';
+            if (names.some(n => n.includes('api'))) return 'api';
             return 'service';
         }
         
         // Data & AI
         if (types.some(t => t === 'py' || t === 'python')) {
-            if (fileNames.some(n => n.includes('model') || n.includes('train') || n.includes('inference'))) {
-                return 'ml';
-            }
-            if (fileNames.some(n => n.includes('ai') || n.includes('agent') || n.includes('llm') || n.includes('rag'))) {
-                return 'ai';
-            }
-            if (fileNames.some(n => n.includes('analytics') || n.includes('dashboard') || n.includes('report'))) {
-                return 'analytics';
-            }
-            if (fileNames.some(n => n.includes('spark') || n.includes('hadoop') || n.includes('big'))) {
-                return 'bigdata';
-            }
+            if (names.some(n => n.includes('model') || n.includes('train'))) return 'ml';
+            if (names.some(n => n.includes('ai') || n.includes('agent') || n.includes('llm'))) return 'ai';
+            if (names.some(n => n.includes('analytics') || n.includes('dashboard'))) return 'analytics';
             return 'tool';
         }
-        if (types.some(t => t === 'sql' || t === 'sqlite' || t === 'database')) {
-            return 'database';
-        }
+        if (types.some(t => t === 'sql' || t === 'sqlite' || t === 'db')) return 'database';
         
         // Desktop & Mobile
-        if (fileNames.some(n => n.includes('electron') || n.includes('main.js'))) {
-            return 'electron';
-        }
-        if (fileNames.some(n => n.includes('react-native') || n.includes('expo'))) {
-            return 'react-native';
-        }
-        if (fileNames.some(n => n.includes('mobile') || n.includes('android') || n.includes('ios'))) {
-            return 'mobile';
-        }
-        if (fileNames.some(n => n.includes('desktop') || n.includes('app'))) {
-            return 'desktop';
-        }
+        if (names.some(n => n.includes('electron'))) return 'electron';
+        if (names.some(n => n.includes('react-native') || n.includes('expo'))) return 'react-native';
+        if (names.some(n => n.includes('mobile') || n.includes('android') || n.includes('ios'))) return 'mobile';
+        if (names.some(n => n.includes('desktop'))) return 'desktop';
         
         // Other
-        if (fileNames.some(n => n.includes('cli') || n.includes('command'))) {
-            return 'cli';
-        }
-        if (fileNames.some(n => n.includes('game') || n.includes('player') || n.includes('engine'))) {
-            return 'game';
-        }
-        if (fileNames.some(n => n.includes('iot') || n.includes('sensor') || n.includes('device'))) {
-            return 'iot';
-        }
-        if (fileNames.some(n => n.includes('plugin') || n.includes('extension'))) {
-            return 'plugin';
-        }
-        if (fileNames.some(n => n.includes('lib') || n.includes('library') || n.includes('module'))) {
-            return 'library';
-        }
+        if (names.some(n => n.includes('cli'))) return 'cli';
+        if (names.some(n => n.includes('game') || n.includes('player'))) return 'game';
+        if (names.some(n => n.includes('iot') || n.includes('sensor'))) return 'iot';
+        if (names.some(n => n.includes('plugin') || n.includes('extension'))) return 'plugin';
+        if (names.some(n => n.includes('lib') || n.includes('library'))) return 'library';
         
         return 'default';
     }
 
     // ==========================================
-    // ADVANCED ANALYSIS METHODS
-    // ==========================================
-    
-    async analyzeDependencies(files) {
-        const dependencies = new Map();
-        const conflicts = [];
-        const resolved = new Set();
-        
-        for (const file of files) {
-            if (file.content && typeof file.content === 'string') {
-                // Extract require/import statements
-                const requires = file.content.match(/require\s*\(\s*['"]([^'"]+)['"]\s*\)/g) || [];
-                const imports = file.content.match(/import\s+.*\s+from\s+['"]([^'"]+)['"]/g) || [];
-                const allDeps = [...requires, ...imports];
-                
-                for (const dep of allDeps) {
-                    const match = dep.match(/['"]([^'"]+)['"]/);
-                    if (match && !match[1].startsWith('.')) {
-                        const depName = match[1];
-                        if (!dependencies.has(depName)) {
-                            dependencies.set(depName, { count: 0, files: [] });
-                        }
-                        dependencies.get(depName).count++;
-                        dependencies.get(depName).files.push(file.name);
-                    }
-                }
-            }
-        }
-        
-        // Check for conflicts
-        for (const [name, data] of dependencies) {
-            if (data.count > 1) {
-                conflicts.push({
-                    name: name,
-                    usage: data.count,
-                    files: data.files,
-                    resolution: 'Multiple files depend on this'
-                });
-            }
-        }
-        
-        return {
-            dependencies: Object.fromEntries(dependencies),
-            conflicts: conflicts,
-            total: dependencies.size,
-            resolved: resolved.size
-        };
-    }
-
-    async scanForSecurity(files) {
-        const vulnerabilities = [];
-        const licenses = new Map();
-        
-        for (const file of files) {
-            if (file.content && typeof file.content === 'string') {
-                // Check for known security patterns
-                const patterns = [
-                    { pattern: /password|passwd|pwd/i, severity: 'high', type: 'Credential' },
-                    { pattern: /api[_-]?key|apikey|token|secret/i, severity: 'high', type: 'API Key' },
-                    { pattern: /private[_-]?key/i, severity: 'critical', type: 'Private Key' },
-                    { pattern: /eval\s*\(/i, severity: 'medium', type: 'Eval Usage' },
-                    { pattern: /innerHTML\s*=/i, severity: 'medium', type: 'XSS Risk' },
-                    { pattern: /document\.write/i, severity: 'medium', type: 'XSS Risk' },
-                    { pattern: /SQL/i, severity: 'medium', type: 'SQL Injection Risk' }
-                ];
-                
-                for (const check of patterns) {
-                    if (check.pattern.test(file.content)) {
-                        vulnerabilities.push({
-                            type: check.type,
-                            severity: check.severity,
-                            file: file.name,
-                            description: `Potential ${check.type} found in ${file.name}`,
-                            recommendation: `Review and remove ${check.type} if not needed`
-                        });
-                    }
-                }
-                
-                // Check for license information
-                const licenseMatch = file.content.match(/license/i);
-                if (licenseMatch) {
-                    licenses.set(file.name, 'License information found');
-                }
-            }
-        }
-        
-        return {
-            vulnerabilities: vulnerabilities,
-            licenses: Object.fromEntries(licenses),
-            totalVulnerabilities: vulnerabilities.length,
-            criticalCount: vulnerabilities.filter(v => v.severity === 'critical').length,
-            highCount: vulnerabilities.filter(v => v.severity === 'high').length,
-            mediumCount: vulnerabilities.filter(v => v.severity === 'medium').length,
-            lowCount: vulnerabilities.filter(v => v.severity === 'low').length
-        };
-    }
-
-    async analyzePerformance(files) {
-        const suggestions = [];
-        const bundleSizes = new Map();
-        const loadTimes = new Map();
-        
-        for (const file of files) {
-            const size = file.size || 0;
-            bundleSizes.set(file.name, size);
-            
-            // Performance suggestions
-            if (size > 1000000) {
-                suggestions.push({
-                    file: file.name,
-                    issue: 'Large file size',
-                    suggestion: 'Consider splitting into smaller modules',
-                    benefit: 'Reduced load time'
-                });
-            }
-            
-            if (file.extension === 'js' && file.content && typeof file.content === 'string') {
-                const lines = file.content.split('\n').length;
-                if (lines > 500) {
-                    suggestions.push({
-                        file: file.name,
-                        issue: 'Large JavaScript file',
-                        suggestion: 'Consider code splitting and lazy loading',
-                        benefit: 'Better performance and faster initial load'
-                    });
-                }
-                
-                // Check for performance patterns
-                if (file.content.includes('for (') && file.content.includes('forEach(')) {
-                    suggestions.push({
-                        file: file.name,
-                        issue: 'Mixed loop patterns',
-                        suggestion: 'Use consistent iteration methods',
-                        benefit: 'Better code maintainability'
-                    });
-                }
-                
-                if (file.content.includes('console.log')) {
-                    suggestions.push({
-                        file: file.name,
-                        issue: 'Console.log statements found',
-                        suggestion: 'Remove console.log in production code',
-                        benefit: 'Better performance'
-                    });
-                }
-            }
-        }
-        
-        return {
-            suggestions: suggestions,
-            bundleSizes: Object.fromEntries(bundleSizes),
-            totalSize: files.reduce((sum, f) => sum + (f.size || 0), 0),
-            averageSize: files.reduce((sum, f) => sum + (f.size || 0), 0) / files.length,
-            loadTimes: Object.fromEntries(loadTimes)
-        };
-    }
-
-    async optimizeIntegration(result, performance) {
-        const optimized = { ...result };
-        
-        if (performance && performance.suggestions) {
-            optimized.optimizations = performance.suggestions.map(s => ({
-                file: s.file,
-                applied: true,
-                suggestion: s.suggestion,
-                benefit: s.benefit
-            }));
-            
-            optimized.optimizedSize = performance.totalSize * 0.7; // Estimate 30% reduction
-            optimized.estimatedLoadTime = performance.totalSize / 1000000 * 0.5; // Estimate 0.5s per MB
-        }
-        
-        return optimized;
-    }
-
-    // ==========================================
-    // AI ENGINE
-    // ==========================================
-    
-    async aiAnalyze(files, result) {
-        if (!this.config.enableAI) {
-            return null;
-        }
-        
-        const analysis = {
-            suggestions: [],
-            predictions: new Map(),
-            patterns: []
-        };
-        
-        // Analyze file patterns
-        const extensions = files.map(f => f.extension || 'unknown');
-        const commonExt = extensions.reduce((acc, ext) => {
-            acc[ext] = (acc[ext] || 0) + 1;
-            return acc;
-        }, {});
-        
-        // Generate suggestions based on patterns
-        for (const [ext, count] of Object.entries(commonExt)) {
-            if (count > 5) {
-                analysis.suggestions.push({
-                    type: 'Pattern',
-                    description: `Multiple ${ext} files detected (${count})`,
-                    suggestion: 'Consider organizing similar files into directories',
-                    impact: 'Better code organization'
-                });
-            }
-        }
-        
-        // Check for missing files
-        const expectedFiles = ['index.js', 'main.js', 'app.js', 'README.md', 'package.json'];
-        const missingFiles = expectedFiles.filter(f => !files.some(file => file.name === f));
-        if (missingFiles.length > 0) {
-            analysis.suggestions.push({
-                type: 'Missing File',
-                description: `Missing expected files: ${missingFiles.join(', ')}`,
-                suggestion: 'Add these files for better project structure',
-                impact: 'Better project organization'
-            });
-        }
-        
-        // Analyze code complexity
-        const totalFunctions = files.reduce((sum, f) => {
-            if (f.content && typeof f.content === 'string') {
-                return sum + (f.content.match(/function\s+[a-zA-Z_]/g) || []).length;
-            }
-            return sum;
-        }, 0);
-        
-        if (totalFunctions > 50) {
-            analysis.suggestions.push({
-                type: 'Code Complexity',
-                description: `High number of functions (${totalFunctions}) detected`,
-                suggestion: 'Consider refactoring into smaller, focused modules',
-                impact: 'Better code maintainability'
-            });
-        }
-        
-        return analysis;
-    }
-
-    // ==========================================
     // HELPER METHODS
     // ==========================================
-    
-    async validateFiles(files) {
-        const errors = [];
-        const warnings = [];
+
+    isType(file, type) {
+        const ext = file.extension || '';
+        const fileType = file.type || '';
+        const analysisType = file.analysis?.type || '';
         
+        const typeMap = {
+            'html': ['html', 'htm', 'xhtml'],
+            'css': ['css', 'scss', 'sass', 'less'],
+            'js': ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs'],
+            'json': ['json', 'json5', 'jsonl'],
+            'py': ['py', 'pyc', 'pyo'],
+            'sol': ['sol', 'vyper'],
+            'image': ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico'],
+            'audio': ['mp3', 'wav', 'flac', 'ogg', 'm4a'],
+            'video': ['mp4', 'avi', 'mov', 'webm', 'mkv'],
+            'sql': ['sql', 'sqlite', 'db'],
+            'csv': ['csv', 'tsv'],
+            'sh': ['sh', 'bash', 'zsh']
+        };
+        
+        const extensions = typeMap[type] || [];
+        return extensions.includes(ext) || analysisType === type || fileType.includes(type);
+    }
+
+    detectPattern(files, pattern) {
+        const patterns = {
+            'routing': /router|route|Routes|routing/i,
+            'state': /redux|store|mobx|zustand|state/i,
+            'api': /api|endpoint|axios|fetch|http/i,
+            'lazy': /lazy|React\.lazy|import\(/i,
+            'auth': /auth|jwt|token|login|logout|authenticate/i,
+            'database': /db|database|sql|mongodb|postgres|mysql/i,
+            'caching': /cache|redis|memcached/i,
+            'validation': /validate|validator|schema|joi|yup/i,
+            'graphql': /graphql|gql|schema|resolver|subscription/i,
+            'subscription': /subscription|subscribe/i,
+            'web3': /web3|ethers|ethereum|blockchain|wallet/i,
+            'wallet': /wallet|metamask|connect/i,
+            'token': /token|erc20|fungible/i,
+            'nft': /nft|erc721|erc1155|tokenURI|metadata/i,
+            'defi': /defi|swap|pool|liquidity|farm|stake|yield/i,
+            'lending': /lend|loan|borrow|collateral/i,
+            'staking': /stake|staking|validator/i,
+            'liquidity': /liquidity|pool|LP/i,
+            'yield': /yield|farm|harvest/i,
+            'train': /train|training|fit|epoch/i,
+            'model': /model|weights|checkpoint/i,
+            'llm': /llm|openai|claude|gemini|gpt|language model/i,
+            'rag': /rag|retrieval|vector|embedding/i,
+            'agent': /agent|tool|function calling/i,
+            'vector': /vector|embedding|chroma|pinecone|qdrant/i,
+            'mqtt': /mqtt|mosquitto|paho/i,
+            'gpio': /gpio|pin|RPi|GPIO/i,
+            'sensor': /sensor|temperature|humidity|pressure/i,
+            'physics': /physics|gravity|collision|body/i,
+            'notification': /notification|push|notify/i,
+            'native': /native|bridge|Java|Objective-C/i,
+            'fs': /fs\.|readFile|writeFile|file system/i,
+            'autoupdater': /autoupdater|auto-updater|update/i,
+            'hook': /hook|useEffect|useState|useCallback/i,
+            'help': /help|usage|--help/i,
+            'version': /version|--version/i,
+            'health': /health|ping|status/i,
+            'queue': /queue|rabbitmq|kafka|sqs/i,
+            'rate-limit': /rate|limit|throttle/i
+        };
+        
+        const regex = patterns[pattern];
+        if (!regex) return false;
+        
+        return files.some(f => {
+            if (!f.content || typeof f.content !== 'string') return false;
+            return regex.test(f.content);
+        });
+    }
+
+    findDependencies(files) {
+        const deps = [];
         for (const file of files) {
-            if (!file.name) {
-                errors.push('File missing name');
+            if (!file.content || typeof file.content !== 'string') continue;
+            
+            // Find require statements
+            const requires = file.content.match(/require\s*\(\s*['"]([^'"]+)['"]\s*\)/g) || [];
+            for (const r of requires) {
+                const match = r.match(/['"]([^'"]+)['"]/);
+                if (match && !match[1].startsWith('.')) {
+                    deps.push(match[1]);
+                }
             }
-            if (!file.content && !file.size) {
-                errors.push(`File ${file.name || 'unknown'} has no content`);
-            }
-            if (file.size > 50 * 1024 * 1024) {
-                warnings.push(`File ${file.name} is very large (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+            
+            // Find import statements
+            const imports = file.content.match(/import\s+.*\s+from\s+['"]([^'"]+)['"]/g) || [];
+            for (const i of imports) {
+                const match = i.match(/['"]([^'"]+)['"]/);
+                if (match && !match[1].startsWith('.')) {
+                    deps.push(match[1]);
+                }
             }
         }
-        
-        return {
-            success: errors.length === 0,
-            errors: errors,
-            warnings: warnings
-        };
+        return [...new Set(deps)];
+    }
+
+    findEndpoints(files) {
+        const endpoints = [];
+        for (const file of files) {
+            if (!file.content || typeof file.content !== 'string') continue;
+            const matches = file.content.match(/['"](GET|POST|PUT|DELETE|PATCH)\s+['"]?([^'"]+)['"]?/g) || [];
+            for (const match of matches) {
+                const parts = match.match(/['"](GET|POST|PUT|DELETE|PATCH)\s+['"]?([^'"]+)['"]?/);
+                if (parts) {
+                    endpoints.push({ method: parts[1], path: parts[2] });
+                }
+            }
+        }
+        return endpoints;
+    }
+
+    findExports(files) {
+        const exports = [];
+        for (const file of files) {
+            if (!file.content || typeof file.content !== 'string') continue;
+            const matches = file.content.match(/export\s+[a-zA-Z_]+/g) || [];
+            for (const match of matches) {
+                const name = match.replace('export ', '');
+                if (name && !name.startsWith('default')) {
+                    exports.push(name);
+                }
+            }
+        }
+        return exports;
+    }
+
+    extractComponents(files) {
+        const components = [];
+        for (const file of files) {
+            if (!file.content || typeof file.content !== 'string') continue;
+            const matches = file.content.match(/class\s+([A-Z][a-zA-Z]*)/g) || [];
+            for (const match of matches) {
+                const name = match.replace('class ', '');
+                if (!components.includes(name)) components.push(name);
+            }
+        }
+        return components;
+    }
+
+    extractSolidityVersion(content) {
+        if (!content) return 'unknown';
+        const match = content.match(/pragma\s+solidity\s+([^;]+);/);
+        return match ? match[1].trim() : 'unknown';
+    }
+
+    findPort(files) {
+        for (const file of files) {
+            if (file.content && typeof file.content === 'string') {
+                const match = file.content.match(/PORT\s*=\s*(\d+)/);
+                if (match) return parseInt(match[1]);
+            }
+        }
+        return null;
+    }
+
+    detectDatabaseType(files) {
+        for (const file of files) {
+            if (file.content && typeof file.content === 'string') {
+                if (file.content.includes('postgres')) return 'postgres';
+                if (file.content.includes('mysql')) return 'mysql';
+                if (file.content.includes('mongodb')) return 'mongodb';
+                if (file.content.includes('sqlite')) return 'sqlite';
+            }
+        }
+        return 'unknown';
+    }
+
+    detectMobilePlatform(files) {
+        for (const file of files) {
+            if (file.content && typeof file.content === 'string') {
+                if (file.content.includes('android') || file.content.includes('java')) return 'android';
+                if (file.content.includes('ios') || file.content.includes('swift')) return 'ios';
+                if (file.content.includes('expo')) return 'expo';
+            }
+        }
+        return 'react-native';
+    }
+
+    detectMLFramework(files) {
+        for (const file of files) {
+            if (file.content && typeof file.content === 'string') {
+                if (file.content.includes('tensorflow')) return 'tensorflow';
+                if (file.content.includes('pytorch')) return 'pytorch';
+                if (file.content.includes('sklearn')) return 'scikit-learn';
+                if (file.content.includes('keras')) return 'keras';
+            }
+        }
+        return 'unknown';
+    }
+
+    detectGameEngine(files) {
+        for (const file of files) {
+            if (file.content && typeof file.content === 'string') {
+                if (file.content.includes('phaser')) return 'phaser';
+                if (file.content.includes('pixi')) return 'pixi.js';
+                if (file.content.includes('three')) return 'three.js';
+                if (file.content.includes('babylon')) return 'babylon.js';
+            }
+        }
+        return 'custom';
+    }
+
+    detectDeviceType(files) {
+        for (const file of files) {
+            if (file.content && typeof file.content === 'string') {
+                if (file.content.includes('arduino')) return 'arduino';
+                if (file.content.includes('esp8266')) return 'esp8266';
+                if (file.content.includes('esp32')) return 'esp32';
+                if (file.content.includes('raspberry')) return 'raspberrypi';
+            }
+        }
+        return 'generic';
     }
 
     validateFiles(files) {
@@ -1189,31 +962,23 @@ export default class IntegratorPro {
         const warnings = [];
         
         for (const file of files) {
-            if (!file.name) {
-                errors.push('File missing name');
-            }
-            if (!file.content && !file.size) {
-                errors.push(`File ${file.name || 'unknown'} has no content`);
-            }
+            if (!file.name) errors.push('File missing name');
+            if (!file.content && !file.size) errors.push(`File ${file.name || 'unknown'} has no content`);
             if (file.size > 50 * 1024 * 1024) {
                 warnings.push(`File ${file.name} is very large (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
             }
         }
         
-        return {
-            success: errors.length === 0,
-            errors: errors,
-            warnings: warnings
-        };
+        return { success: errors.length === 0, errors, warnings };
     }
 
-    getFileTypeDistribution(files) {
-        const distribution = {};
-        for (const file of files) {
-            const type = file.analysis?.type || file.extension || 'unknown';
-            distribution[type] = (distribution[type] || 0) + 1;
-        }
-        return distribution;
+    analyzeDependencies(files) {
+        const dependencies = this.findDependencies(files);
+        return {
+            total: dependencies.length,
+            dependencies: dependencies,
+            duplicates: dependencies.filter((d, i) => dependencies.indexOf(d) !== i)
+        };
     }
 
     calculateComplexity(files) {
@@ -1237,58 +1002,89 @@ export default class IntegratorPro {
         return 'very-complex';
     }
 
-    calculateSecurityScore(file) {
-        let score = 100;
-        
-        if (file.content && typeof file.content === 'string') {
-            if (!file.content.includes('require(') && !file.content.includes('import ')) {
-                score -= 10;
-            }
-            if (file.content.includes('tx.origin')) {
-                score -= 20;
-            }
-            if (file.content.includes('block.timestamp')) {
-                score -= 10;
-            }
-            if (file.content.includes('require(')) {
-                score += 10;
-            }
-            if (file.content.includes('modifier')) {
-                score += 10;
-            }
-        }
-        
-        return Math.max(0, Math.min(100, score));
-    }
-
-    estimateDeploymentCost(contracts) {
-        const baseCost = 0.01;
-        const complexityFactor = contracts.reduce((sum, c) => sum + (c.functions?.length || 0) * 0.001, 0);
-        return baseCost + complexityFactor;
-    }
-
-    detectComponents(files) {
-        const components = [];
+    getFileTypeDistribution(files) {
+        const distribution = {};
         for (const file of files) {
-            if (file.content && typeof file.content === 'string') {
-                const matches = file.content.match(/class\s+([A-Z][a-zA-Z]*)\s+(?:extends|{)/g) || [];
-                for (const match of matches) {
-                    const name = match.replace(/class\s+/, '').replace(/\s+(?:extends|{).*/, '');
-                    components.push(name);
-                }
-            }
+            const type = file.extension || 'unknown';
+            distribution[type] = (distribution[type] || 0) + 1;
         }
-        return components;
+        return distribution;
+    }
+
+    generateName(type) {
+        const names = {
+            'app': 'Web Application',
+            'web': 'Web Page',
+            'spa': 'Single Page Application',
+            'pwa': 'Progressive Web App',
+            'ssr': 'Server-Side Rendered App',
+            'static': 'Static Website',
+            'service': 'API Service',
+            'api': 'REST API',
+            'microservice': 'Microservice',
+            'graphql': 'GraphQL API',
+            'solidity': 'Smart Contract Suite',
+            'blockchain': 'Blockchain Project',
+            'dapp': 'Decentralized App',
+            'nft': 'NFT Project',
+            'defi': 'DeFi Protocol',
+            'database': 'Database Schema',
+            'ml': 'Machine Learning Model',
+            'ai': 'AI System',
+            'analytics': 'Analytics Dashboard',
+            'desktop': 'Desktop Application',
+            'mobile': 'Mobile Application',
+            'electron': 'Electron App',
+            'react-native': 'React Native App',
+            'tool': 'Development Tool',
+            'plugin': 'Plugin',
+            'library': 'Library',
+            'cli': 'CLI Tool',
+            'game': 'Game',
+            'iot': 'IoT Project'
+        };
+        return names[type] || 'Integration';
     }
 
     generateId() {
-        return 'int_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex');
+        return 'int_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
     }
 
-    generateCacheKey(files, options) {
-        const fileNames = files.map(f => f.name).sort().join('|');
-        const optionString = JSON.stringify(options);
-        return crypto.createHash('sha256').update(fileNames + optionString).digest('hex');
+    generateCacheKey(files) {
+        const names = files.map(f => f.name).sort().join('|');
+        const sizes = files.map(f => f.size || 0).sort().join('|');
+        return 'cache_' + this.hash(names + sizes);
+    }
+
+    hash(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return hash.toString(36);
+    }
+
+    cleanCache() {
+        const now = Date.now();
+        for (const [key, value] of this.cache) {
+            if (now - value.timestamp > 3600000) {
+                this.cache.delete(key);
+                this.log(`🧹 Cache cleaned: ${key}`);
+            }
+        }
+    }
+
+    collectWarnings(integration) {
+        const warnings = [];
+        if (integration.validation?.warnings) {
+            warnings.push(...integration.validation.warnings);
+        }
+        if (integration.dependencies?.duplicates?.length > 0) {
+            warnings.push(`${integration.dependencies.duplicates.length} duplicate dependencies found`);
+        }
+        return warnings;
     }
 
     log(message) {
@@ -1297,225 +1093,16 @@ export default class IntegratorPro {
         }
     }
 
-    collectWarnings(integration) {
-        const warnings = [];
-        
-        if (integration.metadata?.validation?.warnings) {
-            warnings.push(...integration.metadata.validation.warnings);
-        }
-        if (integration.security?.vulnerabilities?.length > 0) {
-            warnings.push(`${integration.security.vulnerabilities.length} security issues found`);
-        }
-        if (integration.dependencies?.conflicts?.length > 0) {
-            warnings.push(`${integration.dependencies.conflicts.length} dependency conflicts found`);
-        }
-        if (integration.performance?.suggestions?.length > 0) {
-            warnings.push(`${integration.performance.suggestions.length} performance suggestions`);
-        }
-        
-        return warnings;
-    }
+    // ==========================================
+    // INTEGRATION MANAGEMENT
+    // ==========================================
 
-    // ==========================================
-    // DETECTION HELPERS (Placeholders)
-    // ==========================================
-    
-    detectRouting(files) { return files.some(f => f.content?.includes('router') || f.content?.includes('Route')); }
-    detectStateManagement(files) { return files.some(f => f.content?.includes('redux') || f.content?.includes('store')); }
-    detectAPIClients(files) { return files.some(f => f.content?.includes('fetch') || f.content?.includes('axios')); }
-    detectLazyLoading(files) { return files.some(f => f.content?.includes('lazy') || f.content?.includes('React.lazy')); }
-    findManifest(files) { return files.find(f => f.name === 'manifest.json'); }
-    findServiceWorker(files) { return files.find(f => f.name.includes('service-worker')); }
-    detectPushNotifications(files) { return files.some(f => f.content?.includes('push') || f.content?.includes('notification')); }
-    findServerEntry(files) { return files.find(f => f.name.includes('server') && f.name.includes('entry')); }
-    findClientEntry(files) { return files.find(f => f.name.includes('client') || f.name === 'index.js'); }
-    
-    detectAuthentication(files) { return files.some(f => f.content?.includes('auth') || f.content?.includes('jwt')); }
-    detectDatabase(files) { return files.some(f => f.content?.includes('db') || f.content?.includes('database')); }
-    detectAPIVersion(files) { return files.some(f => f.content?.includes('version') || f.content?.includes('/v1')); }
-    detectRateLimiting(files) { return files.some(f => f.content?.includes('rate') || f.content?.includes('throttle')); }
-    detectCaching(files) { return files.some(f => f.content?.includes('cache')); }
-    detectValidation(files) { return files.some(f => f.content?.includes('validate')); }
-    detectOpenAPI(files) { return files.some(f => f.name.includes('openapi') || f.name.includes('swagger')); }
-    
-    detectPort(files) { return files.some(f => f.content?.includes('PORT')) ? 3000 : 8080; }
-    detectHealthCheck(files) { return files.some(f => f.content?.includes('health')); }
-    detectMessageQueue(files) { return files.some(f => f.content?.includes('queue') || f.content?.includes('rabbitmq')); }
-    detectServiceDiscovery(files) { return files.some(f => f.content?.includes('discovery') || f.content?.includes('consul')); }
-    
-    findGraphQLSchema(files) { return files.find(f => f.name.includes('schema') && f.name.includes('graphql')); }
-    findGraphQLResolvers(files) { return files.find(f => f.name.includes('resolver') && f.name.includes('graphql')); }
-    detectGraphQLSubscriptions(files) { return files.some(f => f.content?.includes('subscription')); }
-    detectGraphQLDirectives(files) { return files.some(f => f.content?.includes('@') && f.content?.includes('directive')); }
-    
-    detectWebSocketChannels(files) { return (files.filter(f => f.content?.includes('channel') || f.content?.includes('room'))).length; }
-    detectHeartbeat(files) { return files.some(f => f.content?.includes('heartbeat')); }
-    
-    detectTokens(files) { return files.some(f => f.content?.includes('token') || f.content?.includes('erc20')); }
-    detectNFTs(files) { return files.some(f => f.content?.includes('nft') || f.content?.includes('erc721')); }
-    detectDeFi(files) { return files.some(f => f.content?.includes('defi') || f.content?.includes('swap') || f.content?.includes('liquidity')); }
-    detectSupportedNetworks(files) { return files.some(f => f.content?.includes('network') || f.content?.includes('chainId')); }
-    
-    detectWeb3Integration(files) { return files.some(f => f.content?.includes('web3') || f.content?.includes('ethers')); }
-    detectWalletIntegration(files) { return files.some(f => f.content?.includes('wallet') || f.content?.includes('metamask')); }
-    detectIPFS(files) { return files.some(f => f.content?.includes('ipfs')); }
-    
-    detectNFTStandard(files) { return files.some(f => f.content?.includes('erc721') || f.content?.includes('erc1155')); }
-    detectNFTMetadata(files) { return files.some(f => f.content?.includes('metadata') || f.content?.includes('tokenURI')); }
-    detectRoyalties(files) { return files.some(f => f.content?.includes('royalty') || f.content?.includes('fee')); }
-    detectMinting(files) { return files.some(f => f.content?.includes('mint')); }
-    
-    detectLending(files) { return files.some(f => f.content?.includes('lend') || f.content?.includes('loan')); }
-    detectBorrowing(files) { return files.some(f => f.content?.includes('borrow')); }
-    detectStaking(files) { return files.some(f => f.content?.includes('stake')); }
-    detectYieldFarming(files) { return files.some(f => f.content?.includes('yield') || f.content?.includes('farm')); }
-    detectLiquidityPools(files) { return files.some(f => f.content?.includes('pool') || f.content?.includes('liquidity')); }
-    
-    detectMigrations(files) { return files.some(f => f.name.includes('migration')); }
-    detectSeeds(files) { return files.some(f => f.name.includes('seed')); }
-    detectBackups(files) { return files.some(f => f.name.includes('backup') || f.name.includes('dump')); }
-    detectDatabaseType(files) { return files.some(f => f.content?.includes('postgres')) ? 'postgres' : 'sqlite'; }
-    
-    detectTraining(files) { return files.some(f => f.content?.includes('train')); }
-    detectInference(files) { return files.some(f => f.content?.includes('infer')); }
-    detectEvaluation(files) { return files.some(f => f.content?.includes('eval')); }
-    detectDataProcessing(files) { return files.some(f => f.content?.includes('pandas') || f.content?.includes('numpy')); }
-    detectModelType(files) { return files.some(f => f.content?.includes('neural')) ? 'neural' : 'traditional'; }
-    detectMLFramework(files) { return files.some(f => f.content?.includes('tensorflow')) ? 'tensorflow' : 'pytorch'; }
-    
-    detectLLM(files) { return files.some(f => f.content?.includes('llm') || f.content?.includes('openai')); }
-    detectRAG(files) { return files.some(f => f.content?.includes('rag') || f.content?.includes('retrieval')); }
-    detectAgents(files) { return files.some(f => f.content?.includes('agent')); }
-    detectVectorDB(files) { return files.some(f => f.content?.includes('vector')); }
-    detectEmbeddings(files) { return files.some(f => f.content?.includes('embedding')); }
-    
-    detectDashboards(files) { return files.some(f => f.content?.includes('dashboard')); }
-    detectReports(files) { return files.some(f => f.name.includes('report')); }
-    detectVisualizations(files) { return files.some(f => f.content?.includes('plot') || f.content?.includes('chart')); }
-    
-    detectSpark(files) { return files.some(f => f.content?.includes('spark')); }
-    detectHadoop(files) { return files.some(f => f.content?.includes('hadoop')); }
-    detectKafka(files) { return files.some(f => f.content?.includes('kafka')); }
-    detectDatabricks(files) { return files.some(f => f.content?.includes('databricks')); }
-    estimateDataVolume(files) { return files.reduce((sum, f) => sum + (f.size || 0), 0); }
-    
-    findDesktopEntry(files) { return files.find(f => f.name.includes('main') && (f.extension === 'js' || f.extension === 'html')); }
-    detectNativeIntegration(files) { return files.some(f => f.content?.includes('native')); }
-    detectFileSystem(files) { return files.some(f => f.content?.includes('fs.') || f.content?.includes('file')); }
-    detectSystemTray(files) { return files.some(f => f.content?.includes('tray')); }
-    
-    findMobileEntry(files) { return files.find(f => f.name.includes('App') || f.name.includes('app')); }
-    detectMobilePlatform(files) { return files.some(f => f.content?.includes('android')) ? 'android' : 'ios'; }
-    detectNativeFeatures(files) { return files.some(f => f.content?.includes('native') || f.content?.includes('bridge')); }
-    detectOfflineSupport(files) { return files.some(f => f.content?.includes('offline') || f.content?.includes('localStorage')); }
-    
-    findMainProcess(files) { return files.find(f => f.name.includes('main') && f.name.includes('electron')); }
-    findRendererProcess(files) { return files.find(f => f.name.includes('renderer') && f.name.includes('electron')); }
-    detectNativeModules(files) { return files.some(f => f.content?.includes('native')); }
-    detectAutoUpdater(files) { return files.some(f => f.content?.includes('autoupdater')); }
-    
-    detectExpo(files) { return files.some(f => f.content?.includes('expo')); }
-    detectAnimations(files) { return files.some(f => f.content?.includes('animated')); }
-    detectNavigation(files) { return files.some(f => f.content?.includes('navigation') || f.content?.includes('Navigator')); }
-    
-    detectPluginAPIs(files) { return files.some(f => f.content?.includes('api') || f.content?.includes('plugin')); }
-    detectHooks(files) { return files.some(f => f.content?.includes('hook')); }
-    
-    findLibraryEntry(files) { return files.find(f => f.name.includes('index') || f.name.includes('main')); }
-    findExports(files) { return files.flatMap(f => f.content?.match(/export\s+[a-zA-Z_]+/g) || []); }
-    detectTests(files) { return files.some(f => f.name.includes('test') || f.name.includes('spec')); }
-    detectDocs(files) { return files.some(f => f.name.includes('docs') || f.name.includes('README')); }
-    
-    findCLICommands(files) { return files.flatMap(f => f.content?.match(/command\s+['"]([^'"]+)['"]/g) || []); }
-    findCLIFlags(files) { return files.flatMap(f => f.content?.match(/flag\s+['"]([^'"]+)['"]/g) || []); }
-    detectHelp(files) { return files.some(f => f.content?.includes('help')); }
-    detectVersion(files) { return files.some(f => f.content?.includes('version')); }
-    
-    detectPhysics(files) { return files.some(f => f.content?.includes('physics') || f.content?.includes('gravity')); }
-    detectGameAI(files) { return files.some(f => f.content?.includes('ai') || f.content?.includes('enemy')); }
-    detectGameEngine(files) { return files.some(f => f.content?.includes('phaser')) ? 'phaser' : 'custom'; }
-    
-    detectSensors(files) { return files.some(f => f.content?.includes('sensor')); }
-    detectActuators(files) { return files.some(f => f.content?.includes('actuator')); }
-    detectMQTT(files) { return files.some(f => f.content?.includes('mqtt')); }
-    detectGPIO(files) { return files.some(f => f.content?.includes('gpio')); }
-    detectCloudIntegration(files) { return files.some(f => f.content?.includes('cloud') || f.content?.includes('aws')); }
-    detectDeviceType(files) { return files.some(f => f.content?.includes('arduino')) ? 'arduino' : 'raspberrypi'; }
-    
-    detectEndpoints(files) {
-        const endpoints = [];
-        for (const file of files) {
-            if (file.content && typeof file.content === 'string') {
-                const matches = file.content.match(/['"](GET|POST|PUT|DELETE|PATCH)\s+['"]?([^'"]+)['"]?/g) || [];
-                for (const match of matches) {
-                    const parts = match.match(/['"](GET|POST|PUT|DELETE|PATCH)\s+['"]?([^'"]+)['"]?/);
-                    if (parts) {
-                        endpoints.push({ method: parts[1], path: parts[2], file: file.name });
-                    }
-                }
-            }
-        }
-        return endpoints;
-    }
-
-    // ==========================================
-    // GENERATION METHODS
-    // ==========================================
-    
-    async generateTests(files, result) {
-        return {
-            generated: true,
-            testFiles: files.filter(f => f.name.includes('test') || f.name.includes('spec')),
-            coverage: 'unknown',
-            suggestions: [
-                'Add unit tests for core functionality',
-                'Add integration tests for API endpoints',
-                'Add end-to-end tests for user flows'
-            ]
-        };
-    }
-
-    async generateDocumentation(files, result) {
-        return {
-            generated: true,
-            docs: files.filter(f => f.name.includes('README') || f.name.includes('docs')),
-            suggestions: [
-                'Add API documentation using OpenAPI/Swagger',
-                'Add inline code comments for complex logic',
-                'Add user guide for installation and usage'
-            ]
-        };
-    }
-
-    // ==========================================
-    // SECURITY PATTERNS
-    // ==========================================
-    
-    loadSecurityPatterns() {
-        return [
-            { pattern: /password|passwd|pwd/i, severity: 'high', type: 'Credential' },
-            { pattern: /api[_-]?key|apikey|token|secret/i, severity: 'high', type: 'API Key' },
-            { pattern: /private[_-]?key/i, severity: 'critical', type: 'Private Key' },
-            { pattern: /eval\s*\(/i, severity: 'medium', type: 'Eval Usage' },
-            { pattern: /innerHTML\s*=/i, severity: 'medium', type: 'XSS Risk' },
-            { pattern: /document\.write/i, severity: 'medium', type: 'XSS Risk' },
-            { pattern: /SQL/i, severity: 'medium', type: 'SQL Injection Risk' },
-            { pattern: /tx\.origin/i, severity: 'high', type: 'Solidity Security' },
-            { pattern: /block\.timestamp/i, severity: 'medium', type: 'Solidity Security' },
-            { pattern: /delegatecall/i, severity: 'high', type: 'Solidity Security' }
-        ];
-    }
-
-    // ==========================================
-    // INTEGRATION MANAGEMENT (Enhanced)
-    // ==========================================
-    
     getIntegration(id) {
         return this.activeIntegrations.get(id) || null;
     }
 
     getAllIntegrations() {
-        return this.integrations;
+        return [...this.integrations];
     }
 
     getIntegrationByType(type) {
@@ -1531,23 +1118,18 @@ export default class IntegratorPro {
     }
 
     getIntegrationStats() {
+        if (this.integrations.length === 0) {
+            return { total: 0, byType: {}, byStatus: {}, averageDuration: 0 };
+        }
+        
         const stats = {
             total: this.integrations.length,
             byType: {},
             byStatus: {},
-            totalFiles: 0,
-            averageDuration: 0,
-            successRate: 0
+            averageDuration: this.integrations.reduce((sum, i) => sum + (i.duration || 0), 0) / this.integrations.length,
+            totalFiles: this.integrations.reduce((sum, i) => sum + (i.files || 0), 0),
+            successRate: (this.integrations.filter(i => i.status === 'completed').length / this.integrations.length) * 100
         };
-        
-        if (this.integrations.length === 0) {
-            return stats;
-        }
-        
-        const successful = this.integrations.filter(i => i.status === 'completed');
-        stats.successRate = (successful.length / this.integrations.length) * 100;
-        stats.averageDuration = this.integrations.reduce((sum, i) => sum + (i.duration || 0), 0) / this.integrations.length;
-        stats.totalFiles = this.integrations.reduce((sum, i) => sum + (i.files || 0), 0);
         
         for (const integration of this.integrations) {
             stats.byType[integration.type] = (stats.byType[integration.type] || 0) + 1;
@@ -1570,42 +1152,30 @@ export default class IntegratorPro {
         const count = this.integrations.length;
         this.integrations = [];
         this.activeIntegrations.clear();
+        this.cache.clear();
         this.log(`🧹 Cleared ${count} integrations`);
         return count;
     }
 
+    reset() {
+        const count = this.clearIntegrations();
+        this.integrationHistory = [];
+        this.queue = [];
+        this.processing = false;
+        return count;
+    }
+
     // ==========================================
-    // EXPORT / IMPORT (Enhanced)
+    // EXPORT / IMPORT
     // ==========================================
-    
-    exportIntegrations(format = 'json') {
-        const data = {
+
+    exportIntegrations() {
+        return JSON.stringify({
             version: '1.0.0',
             exportedAt: new Date().toISOString(),
             total: this.integrations.length,
-            integrations: this.integrations,
-            stats: this.getIntegrationStats()
-        };
-        
-        if (format === 'json') {
-            return JSON.stringify(data, null, 2);
-        } else if (format === 'csv') {
-            // Simple CSV export
-            let csv = 'id,type,files,status,duration,timestamp\n';
-            for (const integration of this.integrations) {
-                csv += `${integration.id},${integration.type},${integration.files},${integration.status},${integration.duration || 0},${integration.timestamp}\n`;
-            }
-            return csv;
-        } else if (format === 'html') {
-            let html = `<html><head><title>Integrations Export</title></head><body><h1>Integrations (${this.integrations.length})</h1><ul>`;
-            for (const integration of this.integrations) {
-                html += `<li><strong>${integration.id}</strong> - ${integration.type} (${integration.files} files) - ${integration.status}</li>`;
-            }
-            html += '</ul></body></html>';
-            return html;
-        }
-        
-        return JSON.stringify(data, null, 2);
+            integrations: this.integrations
+        }, null, 2);
     }
 
     importIntegrations(json) {
@@ -1625,8 +1195,6 @@ export default class IntegratorPro {
                 if (!integration.timestamp) {
                     integration.timestamp = new Date().toISOString();
                 }
-                integration.status = integration.status || 'completed';
-                
                 this.integrations.push(integration);
                 this.activeIntegrations.set(integration.id, integration);
                 imported++;
@@ -1640,25 +1208,9 @@ export default class IntegratorPro {
     }
 
     // ==========================================
-    // PERFORMANCE MONITORING
-    // ==========================================
-    
-    getPerformanceMetrics() {
-        return {
-            totalIntegrations: this.integrations.length,
-            activeIntegrations: this.activeIntegrations.size,
-            averageDuration: this.integrations.reduce((sum, i) => sum + (i.duration || 0), 0) / (this.integrations.length || 1),
-            cacheSize: this.cache.size,
-            queueLength: this.queue.length,
-            processing: this.processing,
-            memoryUsage: process.memoryUsage ? process.memoryUsage() : null
-        };
-    }
-
-    // ==========================================
     // BATCH PROCESSING
     // ==========================================
-    
+
     async batchIntegrate(fileGroups, options = {}) {
         const results = [];
         const totalGroups = fileGroups.length;
@@ -1694,70 +1246,44 @@ export default class IntegratorPro {
     }
 
     // ==========================================
-    // QUEUE MANAGEMENT
+    // PERFORMANCE METRICS
     // ==========================================
-    
-    async enqueue(files, options = {}) {
-        return new Promise((resolve, reject) => {
-            this.queue.push({
-                files: files,
-                options: options,
-                resolve: resolve,
-                reject: reject,
-                timestamp: Date.now()
-            });
-            
-            this.log(`📥 Enqueued integration (queue length: ${this.queue.length})`);
-            
-            if (!this.processing) {
-                this.processQueue();
-            }
+
+    getPerformanceMetrics() {
+        return {
+            totalIntegrations: this.integrations.length,
+            activeIntegrations: this.activeIntegrations.size,
+            averageDuration: this.integrations.reduce((sum, i) => sum + (i.duration || 0), 0) / (this.integrations.length || 1),
+            cacheSize: this.cache.size,
+            queueLength: this.queue.length,
+            processing: this.processing,
+            integrationTypes: Object.keys(this.integrationTypes).length
+        };
+    }
+
+    // ==========================================
+    // SEARCH & FILTER
+    // ==========================================
+
+    searchIntegrations(query) {
+        const lowerQuery = query.toLowerCase();
+        return this.integrations.filter(i => 
+            i.name?.toLowerCase().includes(lowerQuery) ||
+            i.type?.toLowerCase().includes(lowerQuery) ||
+            i.fileList?.some(f => f.toLowerCase().includes(lowerQuery))
+        );
+    }
+
+    filterIntegrations(criteria) {
+        return this.integrations.filter(i => {
+            let match = true;
+            if (criteria.type && i.type !== criteria.type) match = false;
+            if (criteria.status && i.status !== criteria.status) match = false;
+            if (criteria.minFiles && i.files < criteria.minFiles) match = false;
+            if (criteria.maxFiles && i.files > criteria.maxFiles) match = false;
+            if (criteria.dateAfter && new Date(i.timestamp) < new Date(criteria.dateAfter)) match = false;
+            if (criteria.dateBefore && new Date(i.timestamp) > new Date(criteria.dateBefore)) match = false;
+            return match;
         });
-    }
-
-    async processQueue() {
-        if (this.processing || this.queue.length === 0) {
-            return;
-        }
-        
-        this.processing = true;
-        this.log(`🔄 Processing queue (${this.queue.length} items)`);
-        
-        while (this.queue.length > 0) {
-            const item = this.queue.shift();
-            try {
-                const result = await this.integrate(item.files, item.options);
-                item.resolve(result);
-            } catch (error) {
-                item.reject(error);
-            }
-        }
-        
-        this.processing = false;
-        this.log(`✅ Queue processing complete`);
-    }
-
-    // ==========================================
-    // CLEANUP & RESET
-    // ==========================================
-    
-    reset() {
-        const count = this.integrations.length;
-        this.integrations = [];
-        this.activeIntegrations.clear();
-        this.cache.clear();
-        this.queue = [];
-        this.processing = false;
-        this.log(`🔄 Reset complete: removed ${count} integrations`);
-        return count;
-    }
-
-    dispose() {
-        this.reset();
-        this.integrationHistory = [];
-        this.performanceMetrics = {};
-        this.securityScans = {};
-        this.dependencyGraph.clear();
-        this.log(`🧹 Disposed Integrator`);
     }
 }
