@@ -1,17 +1,6 @@
 {
   "name": "universal-integrator-pro",
   "version": "4.0.0",
-<<<<<<< HEAD
-  "description": "Universal File Integration System",
-  "main": "index.html",
-  "scripts": {
-    "build": "echo 'Building...' && mkdir -p dist && cp index.html dist/",
-    "deploy:pages": "npm run build && npx gh-pages -d dist --no-history --dotfiles"
-  },
-  "devDependencies": {
-    "gh-pages": "^6.0.0"
-  }
-=======
   "description": "Enterprise-grade Universal File Integration System with Solidity support - The Most Advanced File Integration System Ever Built",
   "main": "hub.js",
   "type": "module",
@@ -107,6 +96,7 @@
     "@babel/core": "^7.22.0",
     "@babel/preset-env": "^7.22.0",
     "@iarna/toml": "^2.2.5",
+    "@solidity-parser/parser": "^0.16.0",
     "adm-zip": "^0.5.10",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
@@ -124,7 +114,6 @@
     "jsonwebtoken": "^9.0.0",
     "marked": "^5.1.0",
     "multer": "^1.4.5-lts.1",
-    "solidity-parser": "^0.16.0",
     "tar": "^6.1.15",
     "unzipper": "^0.10.11",
     "uuid": "^9.0.0",
@@ -211,7 +200,9 @@
       "/dist/",
       "/coverage/"
     ],
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
     "verbose": true
   },
   "babel": {
@@ -275,5 +266,4 @@
     "not dead",
     "not IE 11"
   ]
->>>>>>> 2e712afaed9cf205785bded61774223a14a98e5a
 }
