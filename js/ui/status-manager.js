@@ -1,564 +1,840 @@
 // ============================================
-// STATUS MANAGER
-// Advanced Notification & Status System
+// STATUS MANAGER - ULTIMATE ADVANCED STATUS ENGINE
 // ============================================
 
 export default class StatusManager {
-    constructor() {
+    constructor(options = {}) {
         // ==========================================
-        // STATE
+        // CORE STATE
         // ==========================================
-        this.statuses = [];
-        this.maxStatuses = 5;
-        this.defaultDuration = 3000;
-        this.container = null;
-        this.isInitialized = false;
-        
-        // Status types with icons
-        this.types = {
-            info: { icon: 'ℹ️', className: 'status-info', defaultDuration: 3000 },
-            success: { icon: '✅', className: 'status-success', defaultDuration: 3000 },
-            warning: { icon: '⚠️', className: 'status-warning', defaultDuration: 5000 },
-            error: { icon: '❌', className: 'status-error', defaultDuration: 8000 },
-            loading: { icon: '⏳', className: 'status-loading', defaultDuration: 0 },
-            progress: { icon: '📊', className: 'status-progress', defaultDuration: 0 }
+        this.statuses = new Map();
+        this.activeStatuses = [];
+        this.statusHistory = [];
+        this.queue = [];
+        this.idCounter = 0;
+        this.isShuttingDown = false;
+        this.eventListeners = new Map();
+        this.stats = {
+            totalStatuses: 0,
+            activeStatuses: 0,
+            resolvedStatuses: 0,
+            clearedStatuses: 0,
+            averageDuration: 0,
+            totalDuration: 0,
+            maxConcurrent: 0
         };
-        
-        // Position options
-        this.positions = {
-            'top-right': { top: '20px', right: '20px', bottom: 'auto', left: 'auto' },
-            'top-left': { top: '20px', left: '20px', bottom: 'auto', right: 'auto' },
-            'top-center': { top: '20px', left: '50%', transform: 'translateX(-50%)', bottom: 'auto', right: 'auto' },
-            'bottom-right': { bottom: '20px', right: '20px', top: 'auto', left: 'auto' },
-            'bottom-left': { bottom: '20px', left: '20px', top: 'auto', right: 'auto' },
-            'bottom-center': { bottom: '20px', left: '50%', transform: 'translateX(-50%)', top: 'auto', right: 'auto' }
+
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        this.config = {
+            // Core
+            enableAutoClear: options.enableAutoClear !== false,
+            enableAutoResolve: options.enableAutoResolve !== false,
+            enablePersistence: options.enablePersistence !== false,
+            enableHistory: options.enableHistory !== false,
+            enableQueue: options.enableQueue !== false,
+            enableBatchProcessing: options.enableBatchProcessing !== false,
+            enableDeduplication: options.enableDeduplication !== false,
+            enablePrioritization: options.enablePrioritization !== false,
+            enableExpiration: options.enableExpiration !== false,
+            enableRetry: options.enableRetry !== false,
+
+            // Status Types
+            enableInfo: options.enableInfo !== false,
+            enableSuccess: options.enableSuccess !== false,
+            enableWarning: options.enableWarning !== false,
+            enableError: options.enableError !== false,
+            enableDebug: options.enableDebug !== false,
+            enableProgress: options.enableProgress !== false,
+            enableLoading: options.enableLoading !== false,
+            enableIdle: options.enableIdle !== false,
+            enableOffline: options.enableOffline !== false,
+            enableOnline: options.enableOnline !== false,
+            enableMaintenance: options.enableMaintenance !== false,
+            enableCritical: options.enableCritical !== false,
+
+            // Behavior
+            defaultDuration: options.defaultDuration || 5000,
+            defaultPriority: options.defaultPriority || 1,
+            maxActive: options.maxActive || 50,
+            maxHistory: options.maxHistory || 1000,
+            maxQueueSize: options.maxQueueSize || 100,
+            autoClearInterval: options.autoClearInterval || 10000,
+
+            // Styling
+            enableTheming: options.enableTheming !== false,
+            enableCustomStyles: options.enableCustomStyles !== false,
+            enableAnimations: options.enableAnimations !== false,
+            enableTransitions: options.enableTransitions !== false,
+            enableIcons: options.enableIcons !== false,
+            enableProgressBars: options.enableProgressBars !== false,
+
+            // Actions
+            enableActions: options.enableActions !== false,
+            enableUndo: options.enableUndo !== false,
+            enableRetry: options.enableRetry !== false,
+            enableDismiss: options.enableDismiss !== false,
+            enableExpand: options.enableExpand !== false,
+
+            // Logging
+            enableLogging: options.enableLogging !== false,
+            logLevel: options.logLevel || 'info'
         };
-        
-        this.position = 'top-right';
-        this.autoRemove = true;
-    }
 
-    // ==========================================
-    // INITIALIZATION
-    // ==========================================
-    init() {
-        if (this.isInitialized) return;
-        
-        this.createContainer();
-        this.injectStyles();
-        this.isInitialized = true;
-        console.log('📊 Status Manager initialized');
-    }
-
-    createContainer() {
-        this.container = document.getElementById('statusContainer');
-        if (!this.container) {
-            this.container = document.createElement('div');
-            this.container.id = 'statusContainer';
-            this.container.className = 'status-container';
-            this.container.style.cssText = this.getContainerStyles();
-            document.body.appendChild(this.container);
-        }
-    }
-
-    getContainerStyles() {
-        const pos = this.positions[this.position] || this.positions['top-right'];
-        return `
-            position: fixed;
-            ${pos.top !== 'auto' ? `top: ${pos.top};` : ''}
-            ${pos.right !== 'auto' ? `right: ${pos.right};` : ''}
-            ${pos.bottom !== 'auto' ? `bottom: ${pos.bottom};` : ''}
-            ${pos.left !== 'auto' ? `left: ${pos.left};` : ''}
-            ${pos.transform ? `transform: ${pos.transform};` : ''}
-            z-index: 9998;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 400px;
-            width: 100%;
-            pointer-events: none;
-        `;
-    }
-
-    // ==========================================
-    // SHOW STATUS
-    // ==========================================
-    show(message, type = 'info', duration = null) {
-        this.init();
-        
-        const typeConfig = this.types[type] || this.types.info;
-        const actualDuration = duration !== null ? duration : typeConfig.defaultDuration;
-        
-        // Create status element
-        const status = document.createElement('div');
-        status.className = `status-item ${typeConfig.className}`;
-        status.style.cssText = `
-            pointer-events: all;
-            background: rgba(13, 26, 42, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 14px 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(74, 158, 255, 0.15);
-            color: #e0e0e0;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            animation: statusSlideIn 0.3s ease forwards;
-            transition: all 0.3s ease;
-            position: relative;
-            min-width: 200px;
-        `;
-        
-        // Light theme support
-        if (document.body.classList.contains('light')) {
-            status.style.background = 'rgba(255, 255, 255, 0.95)';
-            status.style.color = '#1a1a2e';
-            status.style.borderColor = 'rgba(0, 0, 0, 0.1)';
-        }
-        
-        // Type-specific border
-        const borderColors = {
-            info: '#4a9eff',
-            success: '#4CAF50',
-            warning: '#ffd700',
-            error: '#ff4757',
-            loading: '#4a9eff',
-            progress: '#a855f7'
+        // ==========================================
+        // STATUS LEVELS
+        // ==========================================
+        this.levels = {
+            info: {
+                name: 'Info',
+                priority: 1,
+                icon: 'ℹ️',
+                color: '#2196F3',
+                bgColor: '#E3F2FD',
+                duration: 5000,
+                autoClear: true
+            },
+            success: {
+                name: 'Success',
+                priority: 2,
+                icon: '✅',
+                color: '#4CAF50',
+                bgColor: '#E8F5E9',
+                duration: 5000,
+                autoClear: true
+            },
+            warning: {
+                name: 'Warning',
+                priority: 3,
+                icon: '⚠️',
+                color: '#FF9800',
+                bgColor: '#FFF3E0',
+                duration: 8000,
+                autoClear: true
+            },
+            error: {
+                name: 'Error',
+                priority: 4,
+                icon: '❌',
+                color: '#F44336',
+                bgColor: '#FFEBEE',
+                duration: 10000,
+                autoClear: true
+            },
+            debug: {
+                name: 'Debug',
+                priority: 0,
+                icon: '🔧',
+                color: '#9E9E9E',
+                bgColor: '#F5F5F5',
+                duration: 3000,
+                autoClear: true
+            },
+            progress: {
+                name: 'Progress',
+                priority: 2,
+                icon: '⏳',
+                color: '#2196F3',
+                bgColor: '#E3F2FD',
+                duration: 0,
+                autoClear: false
+            },
+            loading: {
+                name: 'Loading',
+                priority: 1,
+                icon: '🔄',
+                color: '#607D8B',
+                bgColor: '#ECEFF1',
+                duration: 0,
+                autoClear: false
+            },
+            idle: {
+                name: 'Idle',
+                priority: 0,
+                icon: '💤',
+                color: '#9E9E9E',
+                bgColor: '#F5F5F5',
+                duration: 0,
+                autoClear: true
+            },
+            offline: {
+                name: 'Offline',
+                priority: 5,
+                icon: '📡',
+                color: '#F44336',
+                bgColor: '#FFEBEE',
+                duration: 0,
+                autoClear: false
+            },
+            online: {
+                name: 'Online',
+                priority: 5,
+                icon: '🌐',
+                color: '#4CAF50',
+                bgColor: '#E8F5E9',
+                duration: 0,
+                autoClear: false
+            },
+            maintenance: {
+                name: 'Maintenance',
+                priority: 5,
+                icon: '🔧',
+                color: '#FF9800',
+                bgColor: '#FFF3E0',
+                duration: 0,
+                autoClear: false
+            },
+            critical: {
+                name: 'Critical',
+                priority: 6,
+                icon: '🚨',
+                color: '#D32F2F',
+                bgColor: '#FFCDD2',
+                duration: 0,
+                autoClear: false
+            }
         };
-        status.style.borderLeft = `4px solid ${borderColors[type] || borderColors.info}`;
-        
-        // Icon and message
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'status-icon';
-        iconSpan.textContent = typeConfig.icon;
-        iconSpan.style.fontSize = '1.2rem';
-        status.appendChild(iconSpan);
-        
-        const messageSpan = document.createElement('span');
-        messageSpan.className = 'status-message';
-        messageSpan.textContent = message;
-        messageSpan.style.flex = '1';
-        messageSpan.style.wordBreak = 'break-word';
-        status.appendChild(messageSpan);
-        
-        // Close button
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'status-close';
-        closeBtn.innerHTML = '&times;';
-        closeBtn.style.cssText = `
-            background: none;
-            border: none;
-            color: #8899aa;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0 4px;
-            transition: color 0.3s;
-            line-height: 1;
-        `;
-        closeBtn.addEventListener('mouseenter', () => {
-            closeBtn.style.color = '#ff4757';
-        });
-        closeBtn.addEventListener('mouseleave', () => {
-            closeBtn.style.color = '#8899aa';
-        });
-        closeBtn.addEventListener('click', () => {
-            this.remove(status);
-        });
-        status.appendChild(closeBtn);
-        
-        // Add progress bar for loading types
-        let progressBar = null;
-        if (type === 'loading' || type === 'progress') {
-            progressBar = document.createElement('div');
-            progressBar.className = 'status-progress-bar';
-            progressBar.style.cssText = `
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                height: 3px;
-                background: linear-gradient(90deg, #4a9eff, #a855f7);
-                border-radius: 0 0 0 4px;
-                width: 0%;
-                transition: width 0.3s ease;
-            `;
-            status.appendChild(progressBar);
-            status.style.paddingBottom = '18px';
-        }
-        
-        // Add to container
-        this.container.appendChild(status);
-        
-        // Store status data
-        const statusData = {
-            element: status,
-            type: type,
-            message: message,
-            duration: actualDuration,
-            progressBar: progressBar,
-            createdAt: Date.now(),
-            timeoutId: null,
-            progress: 0,
-            isRemoving: false
+
+        // ==========================================
+        // STATUS ACTIONS
+        // ==========================================
+        this.actions = {
+            dismiss: {
+                name: 'Dismiss',
+                icon: '✕',
+                handler: (id) => this.clear(id)
+            },
+            retry: {
+                name: 'Retry',
+                icon: '🔄',
+                handler: (id) => this.retry(id)
+            },
+            undo: {
+                name: 'Undo',
+                icon: '↩️',
+                handler: (id) => this.undo(id)
+            },
+            expand: {
+                name: 'Expand',
+                icon: '📋',
+                handler: (id) => this.expand(id)
+            },
+            copy: {
+                name: 'Copy',
+                icon: '📋',
+                handler: (id) => this.copy(id)
+            },
+            report: {
+                name: 'Report',
+                icon: '📊',
+                handler: (id) => this.report(id)
+            }
         };
-        
-        this.statuses.push(statusData);
-        
-        // Auto-remove after duration
-        if (actualDuration > 0 && this.autoRemove) {
-            statusData.timeoutId = setTimeout(() => {
-                this.remove(status);
-            }, actualDuration);
-        }
-        
-        // Limit number of statuses
-        if (this.statuses.length > this.maxStatuses) {
-            const oldest = this.statuses.shift();
-            if (oldest && oldest.element.parentNode) {
-                this.remove(oldest.element);
-            }
-        }
-        
-        // Click to dismiss (except loading/progress)
-        if (type !== 'loading' && type !== 'progress') {
-            status.addEventListener('click', (e) => {
-                if (e.target === status || e.target.classList.contains('status-message')) {
-                    this.remove(status);
-                }
-            });
-        }
-        
-        // Hover to pause auto-remove
-        if (actualDuration > 0) {
-            status.addEventListener('mouseenter', () => {
-                if (statusData.timeoutId) {
-                    clearTimeout(statusData.timeoutId);
-                    statusData.timeoutId = null;
-                }
-            });
-            status.addEventListener('mouseleave', () => {
-                if (actualDuration > 0 && !statusData.isRemoving) {
-                    statusData.timeoutId = setTimeout(() => {
-                        this.remove(status);
-                    }, Math.max(1000, actualDuration - (Date.now() - statusData.createdAt)));
-                }
-            });
-        }
-        
-        return statusData;
+
+        // ==========================================
+        // STATUS PRIORITIES
+        // ==========================================
+        this.priorities = {
+            low: 0,
+            normal: 1,
+            high: 2,
+            urgent: 3,
+            critical: 4
+        };
+
+        this.log('📊 StatusManager Ultimate initialized');
+        this.log(`📦 Status Levels: ${Object.keys(this.levels).length}`);
+        this.log(`🔧 Actions: ${Object.keys(this.actions).length}`);
+        this.log(`📊 Priorities: ${Object.keys(this.priorities).length}`);
     }
 
     // ==========================================
-    // REMOVE STATUS
+    // MAIN STATUS METHODS
     // ==========================================
-    remove(statusElement) {
-        if (!statusElement) return;
-        
-        const index = this.statuses.findIndex(s => s.element === statusElement);
-        if (index === -1) return;
-        
-        const statusData = this.statuses[index];
-        if (statusData.isRemoving) return;
-        statusData.isRemoving = true;
-        
-        // Clear timeout
-        if (statusData.timeoutId) {
-            clearTimeout(statusData.timeoutId);
-            statusData.timeoutId = null;
+
+    set(status, options = {}) {
+        if (this.isShuttingDown) {
+            throw new Error('StatusManager is shutting down');
         }
-        
-        // Remove from array
-        this.statuses.splice(index, 1);
-        
-        // Animate out
-        statusElement.style.animation = 'statusSlideOut 0.3s ease forwards';
-        setTimeout(() => {
-            if (statusElement.parentNode) {
-                statusElement.remove();
+
+        const id = this.generateId();
+        const level = this.levels[status] || this.levels.info;
+
+        // Deduplication
+        if (this.config.enableDeduplication) {
+            const existing = this.findDuplicate(status, options);
+            if (existing) {
+                this.update(existing.id, { ...options, timestamp: Date.now() });
+                return existing;
             }
-        }, 300);
+        }
+
+        // Queue if max active reached
+        if (this.activeStatuses.length >= this.config.maxActive) {
+            if (this.config.enableQueue) {
+                return this.queueStatus(id, status, options);
+            }
+            // Auto-clear oldest if no queue
+            const oldest = this.activeStatuses.shift();
+            if (oldest) {
+                this.clear(oldest.id);
+            }
+        }
+
+        const statusObj = this.createStatus(id, status, options, level);
+        this.addStatus(statusObj);
+
+        // Auto-clear
+        if (level.autoClear && this.config.enableAutoClear) {
+            this.scheduleClear(id, options.duration || level.duration || this.config.defaultDuration);
+        }
+
+        this.log(`📊 Status set: ${status} (${id})`);
+        this.emit('statusSet', { id, status, statusObj });
+
+        return {
+            id,
+            status: statusObj,
+            clear: () => this.clear(id),
+            update: (newOptions) => this.update(id, newOptions),
+            on: (event, callback) => this.onStatusEvent(id, event, callback)
+        };
+    }
+
+    get(id) {
+        return this.statuses.get(id) || null;
+    }
+
+    clear(id) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        // Cancel auto-clear
+        if (status.clearTimeout) {
+            clearTimeout(status.clearTimeout);
+        }
+
+        // Remove from active
+        const index = this.activeStatuses.indexOf(status);
+        if (index !== -1) {
+            this.activeStatuses.splice(index, 1);
+        }
+
+        // Add to history
+        if (this.config.enableHistory) {
+            status.resolvedAt = Date.now();
+            status.duration = status.resolvedAt - status.timestamp;
+            this.statusHistory.push(status);
+            this.stats.resolvedStatuses++;
+            this.stats.totalDuration += status.duration;
+
+            // Limit history
+            if (this.statusHistory.length > this.config.maxHistory) {
+                this.statusHistory = this.statusHistory.slice(-this.config.maxHistory);
+            }
+        }
+
+        // Remove from map
+        this.statuses.delete(id);
+
+        // Update stats
+        this.stats.activeStatuses = this.activeStatuses.length;
+        this.stats.clearedStatuses++;
+        this.stats.averageDuration = this.stats.totalDuration / this.stats.resolvedStatuses;
+
+        this.log(`📊 Status cleared: ${id}`);
+        this.emit('statusCleared', { id, status });
+
+        // Process queue
+        this.processQueue();
+
+        return true;
+    }
+
+    clearAll() {
+        const count = this.activeStatuses.length;
+        const ids = this.activeStatuses.map(s => s.id);
+
+        for (const id of ids) {
+            this.clear(id);
+        }
+
+        this.log(`📊 Cleared all ${count} statuses`);
+        this.emit('allStatusesCleared', { count });
+
+        return count;
+    }
+
+    clearByType(type) {
+        const statuses = this.activeStatuses.filter(s => s.type === type);
+        const count = statuses.length;
+
+        for (const status of statuses) {
+            this.clear(status.id);
+        }
+
+        this.log(`📊 Cleared ${count} ${type} statuses`);
+        this.emit('statusesClearedByType', { type, count });
+
+        return count;
+    }
+
+    clearByLevel(level) {
+        const statuses = this.activeStatuses.filter(s => s.level === level);
+        const count = statuses.length;
+
+        for (const status of statuses) {
+            this.clear(status.id);
+        }
+
+        this.log(`📊 Cleared ${count} ${level} statuses`);
+        this.emit('statusesClearedByLevel', { level, count });
+
+        return count;
     }
 
     // ==========================================
-    // UPDATE STATUS
+    // STATUS CREATION
     // ==========================================
-    update(statusElement, options = {}) {
-        if (!statusElement) return false;
-        
-        const index = this.statuses.findIndex(s => s.element === statusElement);
-        if (index === -1) return false;
-        
-        const statusData = this.statuses[index];
-        
-        // Update message
-        if (options.message) {
-            const msgEl = statusElement.querySelector('.status-message');
-            if (msgEl) {
-                msgEl.textContent = options.message;
+
+    createStatus(id, type, options, level) {
+        const priority = this.priorities[options.priority] || level.priority || this.config.defaultPriority;
+
+        return {
+            id,
+            type,
+            level: options.level || type,
+            message: options.message || '',
+            description: options.description || '',
+            details: options.details || null,
+            data: options.data || {},
+            priority,
+            timestamp: Date.now(),
+            duration: 0,
+            resolvedAt: null,
+            clearTimeout: null,
+            autoClear: options.autoClear !== undefined ? options.autoClear : level.autoClear,
+            actions: options.actions || [],
+            progress: options.progress || null,
+            percentage: options.percentage || 0,
+            retryCount: options.retryCount || 0,
+            maxRetries: options.maxRetries || 3,
+            isRetryable: options.isRetryable || false,
+            isUndoable: options.isUndoable || false,
+            isDismissible: options.isDismissible !== false,
+            isExpandable: options.isExpandable || false,
+            tags: options.tags || [],
+            metadata: options.metadata || {},
+            icon: options.icon || level.icon,
+            color: options.color || level.color,
+            bgColor: options.bgColor || level.bgColor,
+            duration: options.duration || level.duration || this.config.defaultDuration
+        };
+    }
+
+    addStatus(status) {
+        this.statuses.set(status.id, status);
+        this.activeStatuses.push(status);
+
+        this.stats.totalStatuses++;
+        this.stats.activeStatuses = this.activeStatuses.length;
+        this.stats.maxConcurrent = Math.max(this.stats.maxConcurrent, this.activeStatuses.length);
+
+        // Sort by priority
+        this.activeStatuses.sort((a, b) => b.priority - a.priority);
+
+        this.emit('statusAdded', { status });
+    }
+
+    // ==========================================
+    // UPDATE
+    // ==========================================
+
+    update(id, updates) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        // Update properties
+        if (updates.message !== undefined) status.message = updates.message;
+        if (updates.description !== undefined) status.description = updates.description;
+        if (updates.details !== undefined) status.details = updates.details;
+        if (updates.data !== undefined) status.data = { ...status.data, ...updates.data };
+        if (updates.progress !== undefined) status.progress = updates.progress;
+        if (updates.percentage !== undefined) status.percentage = updates.percentage;
+        if (updates.tags !== undefined) status.tags = updates.tags;
+        if (updates.metadata !== undefined) status.metadata = { ...status.metadata, ...updates.metadata };
+
+        // Update duration
+        if (updates.duration !== undefined) {
+            status.duration = updates.duration;
+            if (status.clearTimeout) {
+                clearTimeout(status.clearTimeout);
+                this.scheduleClear(id, updates.duration);
             }
-            statusData.message = options.message;
         }
-        
-        // Update progress
-        if (options.progress !== undefined && statusData.progressBar) {
-            const progress = Math.max(0, Math.min(100, options.progress));
-            statusData.progress = progress;
-            statusData.progressBar.style.width = progress + '%';
-            
-            // Auto-remove when complete
-            if (progress >= 100 && statusData.duration > 0) {
-                setTimeout(() => {
-                    this.remove(statusElement);
-                }, 500);
-            }
+
+        // Update priority
+        if (updates.priority !== undefined) {
+            status.priority = this.priorities[updates.priority] || updates.priority;
+            // Re-sort
+            this.activeStatuses.sort((a, b) => b.priority - a.priority);
         }
-        
-        // Update type
-        if (options.type && this.types[options.type]) {
-            const typeConfig = this.types[options.type];
-            statusElement.className = `status-item ${typeConfig.className}`;
-            const icon = statusElement.querySelector('.status-icon');
-            if (icon) {
-                icon.textContent = typeConfig.icon;
-            }
-            statusData.type = options.type;
-        }
-        
+
+        status.timestamp = Date.now();
+
+        this.log(`📊 Status updated: ${id}`);
+        this.emit('statusUpdated', { id, status, updates });
+
         return true;
     }
 
     // ==========================================
-    // CONVENIENCE METHODS
+    // PROGRESS
     // ==========================================
-    info(message, duration = null) {
-        return this.show(message, 'info', duration);
-    }
 
-    success(message, duration = null) {
-        return this.show(message, 'success', duration);
-    }
+    progress(id, percentage, message) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
 
-    warning(message, duration = null) {
-        return this.show(message, 'warning', duration);
-    }
-
-    error(message, duration = null) {
-        return this.show(message, 'error', duration);
-    }
-
-    loading(message, duration = 0) {
-        return this.show(message, 'loading', duration);
-    }
-
-    progress(message, progress = 0, duration = 0) {
-        const status = this.show(message, 'progress', duration);
-        if (status && status.progressBar) {
-            status.progress = progress;
-            status.progressBar.style.width = progress + '%';
+        status.percentage = Math.min(100, Math.max(0, percentage));
+        if (message !== undefined) {
+            status.message = message;
         }
-        return status;
+
+        this.log(`📊 Progress ${status.percentage}%: ${id}`);
+        this.emit('statusProgress', { id, status, percentage });
+
+        // Auto-clear on complete
+        if (percentage >= 100 && status.autoClear) {
+            this.scheduleClear(id, 2000);
+        }
+
+        return true;
     }
 
     // ==========================================
-    // QUEUE MANAGEMENT
+    // QUEUE
     // ==========================================
-    clear() {
-        while (this.statuses.length > 0) {
-            const status = this.statuses.pop();
-            if (status.element.parentNode) {
-                status.element.remove();
+
+    queueStatus(id, type, options) {
+        return new Promise((resolve) => {
+            this.queue.push({
+                id,
+                type,
+                options,
+                timestamp: Date.now()
+            });
+
+            this.log(`📥 Status queued: ${id} (position: ${this.queue.length})`);
+            this.emit('statusQueued', { queueLength: this.queue.length });
+
+            // Process if not at max
+            if (this.activeStatuses.length < this.config.maxActive) {
+                this.processQueue();
             }
-            if (status.timeoutId) {
-                clearTimeout(status.timeoutId);
+
+            resolve({
+                id,
+                queued: true,
+                position: this.queue.length
+            });
+        });
+    }
+
+    processQueue() {
+        if (this.queue.length === 0) return;
+        if (this.activeStatuses.length >= this.config.maxActive) return;
+
+        const queued = this.queue.shift();
+        if (!queued) return;
+
+        const result = this.set(queued.type, queued.options);
+        this.emit('statusProcessed', { id: result.id });
+    }
+
+    // ==========================================
+    // SCHEDULING
+    // ==========================================
+
+    scheduleClear(id, duration) {
+        const status = this.statuses.get(id);
+        if (!status) return;
+
+        if (duration <= 0) return;
+
+        if (status.clearTimeout) {
+            clearTimeout(status.clearTimeout);
+        }
+
+        status.clearTimeout = setTimeout(() => {
+            this.clear(id);
+        }, duration);
+    }
+
+    // ==========================================
+    // ACTIONS
+    // ==========================================
+
+    retry(id) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        if (!status.isRetryable) {
+            throw new Error('Status is not retryable');
+        }
+
+        if (status.retryCount >= status.maxRetries) {
+            throw new Error('Max retries reached');
+        }
+
+        status.retryCount++;
+        status.message = `Retrying (${status.retryCount}/${status.maxRetries})...`;
+        status.timestamp = Date.now();
+
+        this.log(`🔄 Retry ${status.retryCount}: ${id}`);
+        this.emit('statusRetry', { id, status });
+
+        return true;
+    }
+
+    undo(id) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        if (!status.isUndoable) {
+            throw new Error('Status is not undoable');
+        }
+
+        this.log(`↩️ Undo: ${id}`);
+        this.emit('statusUndo', { id, status });
+
+        return true;
+    }
+
+    expand(id) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        if (!status.isExpandable) {
+            throw new Error('Status is not expandable');
+        }
+
+        this.log(`📋 Expand: ${id}`);
+        this.emit('statusExpand', { id, status });
+
+        return true;
+    }
+
+    copy(id) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        const text = `${status.message}\n${status.description || ''}`;
+        navigator.clipboard?.writeText(text);
+
+        this.log(`📋 Copy: ${id}`);
+        this.emit('statusCopy', { id, status });
+
+        return true;
+    }
+
+    report(id) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        this.log(`📊 Report: ${id}`);
+        this.emit('statusReport', { id, status });
+
+        return true;
+    }
+
+    // ==========================================
+    // FINDING
+    // ==========================================
+
+    findDuplicate(type, options) {
+        return this.activeStatuses.find(s => 
+            s.type === type && 
+            s.message === options.message &&
+            s.description === options.description
+        ) || null;
+    }
+
+    findByType(type) {
+        return this.activeStatuses.filter(s => s.type === type);
+    }
+
+    findByLevel(level) {
+        return this.activeStatuses.filter(s => s.level === level);
+    }
+
+    findByTag(tag) {
+        return this.activeStatuses.filter(s => s.tags.includes(tag));
+    }
+
+    findByPriority(priority) {
+        return this.activeStatuses.filter(s => s.priority === priority);
+    }
+
+    // ==========================================
+    // STATUS EVENTS
+    // ==========================================
+
+    onStatusEvent(id, event, callback) {
+        const status = this.statuses.get(id);
+        if (!status) return false;
+
+        if (!status.events) {
+            status.events = new Map();
+        }
+
+        if (!status.events.has(event)) {
+            status.events.set(event, []);
+        }
+        status.events.get(event).push(callback);
+        return true;
+    }
+
+    emitStatusEvent(id, event, data) {
+        const status = this.statuses.get(id);
+        if (!status) return;
+
+        if (status.events && status.events.has(event)) {
+            for (const callback of status.events.get(event)) {
+                try {
+                    callback(data);
+                } catch (error) {
+                    console.error(`Error in status event ${event}:`, error);
+                }
             }
         }
     }
 
-    removeAll() {
-        this.clear();
+    // ==========================================
+    // GETTERS
+    // ==========================================
+
+    getAll() {
+        return [...this.activeStatuses];
     }
 
-    getStatuses() {
-        return this.statuses.map(s => ({
-            type: s.type,
-            message: s.message,
-            progress: s.progress,
-            createdAt: s.createdAt
-        }));
+    getCount() {
+        return this.activeStatuses.length;
+    }
+
+    getStats() {
+        return {
+            ...this.stats,
+            averageDuration: this.stats.totalStatuses > 0 
+                ? this.stats.totalDuration / this.stats.totalStatuses 
+                : 0
+        };
+    }
+
+    getHistory() {
+        return [...this.statusHistory];
+    }
+
+    getQueue() {
+        return [...this.queue];
     }
 
     // ==========================================
-    // CONFIGURATION
+    // UTILITY METHODS
     // ==========================================
-    setPosition(position) {
-        if (this.positions[position]) {
-            this.position = position;
-            if (this.container) {
-                this.container.style.cssText = this.getContainerStyles();
-            }
+
+    generateId() {
+        this.idCounter++;
+        return 'status_' + Date.now() + '_' + this.idCounter + '_' + 
+               Math.random().toString(36).substr(2, 6);
+    }
+
+    log(message) {
+        if (this.config.enableLogging) {
+            const timestamp = new Date().toISOString();
+            console.log(`[StatusManager] ${timestamp} - ${message}`);
         }
     }
 
-    setMaxStatuses(max) {
-        this.maxStatuses = Math.max(1, max);
-        // Remove excess statuses
-        while (this.statuses.length > this.maxStatuses) {
-            const oldest = this.statuses.shift();
-            if (oldest && oldest.element.parentNode) {
-                this.remove(oldest.element);
+    // ==========================================
+    // EVENT SYSTEM
+    // ==========================================
+
+    on(event, callback) {
+        if (!this.eventListeners.has(event)) {
+            this.eventListeners.set(event, []);
+        }
+        this.eventListeners.get(event).push(callback);
+        return this;
+    }
+
+    off(event, callback) {
+        if (this.eventListeners.has(event)) {
+            const callbacks = this.eventListeners.get(event);
+            const index = callbacks.indexOf(callback);
+            if (index !== -1) {
+                callbacks.splice(index, 1);
             }
         }
+        return this;
     }
 
-    setAutoRemove(auto) {
-        this.autoRemove = auto;
+    emit(event, data) {
+        if (this.eventListeners.has(event)) {
+            const callbacks = this.eventListeners.get(event);
+            for (const callback of callbacks) {
+                try {
+                    callback(data);
+                } catch (error) {
+                    console.error(`Error in event listener for ${event}:`, error);
+                }
+            }
+        }
+        return this;
     }
 
     // ==========================================
-    // STYLE INJECTION
+    // SERIALIZATION
     // ==========================================
-    injectStyles() {
-        if (document.getElementById('status-manager-styles')) return;
-        
-        const styles = `
-            /* Status Container */
-            .status-container {
-                position: fixed;
-                z-index: 9998;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                max-width: 400px;
-                width: 100%;
-                pointer-events: none;
+
+    toJSON() {
+        return {
+            version: '2.0.0',
+            stats: this.stats,
+            config: this.config,
+            statuses: Array.from(this.statuses.entries()).map(([id, status]) => ({
+                id,
+                ...status,
+                clearTimeout: null
+            }))
+        };
+    }
+
+    static fromJSON(data) {
+        const manager = new StatusManager(data.config);
+        manager.stats = data.stats || manager.stats;
+        if (data.statuses) {
+            for (const statusData of data.statuses) {
+                const { id, ...status } = statusData;
+                manager.statuses.set(id, { ...status, clearTimeout: null });
+                manager.activeStatuses.push(status);
             }
+        }
+        return manager;
+    }
 
-            /* Status Item */
-            .status-item {
-                pointer-events: all;
-                background: rgba(13, 26, 42, 0.95);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                padding: 14px 18px;
-                border-radius: 12px;
-                border: 1px solid rgba(74, 158, 255, 0.15);
-                color: #e0e0e0;
-                font-size: 0.9rem;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-                animation: statusSlideIn 0.3s ease forwards;
-                transition: all 0.3s ease;
-                position: relative;
-                min-width: 200px;
-                padding-bottom: 14px;
-            }
+    // ==========================================
+    // SHUTDOWN
+    // ==========================================
 
-            body.light .status-item {
-                background: rgba(255, 255, 255, 0.95);
-                color: #1a1a2e;
-                border-color: rgba(0, 0, 0, 0.1);
-            }
-
-            /* Status Types */
-            .status-info { border-left: 4px solid #4a9eff; }
-            .status-success { border-left: 4px solid #4CAF50; }
-            .status-warning { border-left: 4px solid #ffd700; }
-            .status-error { border-left: 4px solid #ff4757; }
-            .status-loading { border-left: 4px solid #4a9eff; }
-            .status-progress { border-left: 4px solid #a855f7; }
-
-            .status-icon {
-                font-size: 1.2rem;
-                flex-shrink: 0;
-            }
-
-            .status-message {
-                flex: 1;
-                word-break: break-word;
-            }
-
-            .status-close {
-                background: none;
-                border: none;
-                color: #8899aa;
-                font-size: 1.2rem;
-                cursor: pointer;
-                padding: 0 4px;
-                transition: color 0.3s;
-                line-height: 1;
-                flex-shrink: 0;
-            }
-
-            .status-close:hover {
-                color: #ff4757;
-            }
-
-            .status-progress-bar {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                height: 3px;
-                background: linear-gradient(90deg, #4a9eff, #a855f7);
-                border-radius: 0 0 0 4px;
-                width: 0%;
-                transition: width 0.3s ease;
-            }
-
-            /* Animations */
-            @keyframes statusSlideIn {
-                from {
-                    transform: translateX(100px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-
-            @keyframes statusSlideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100px);
-                    opacity: 0;
-                }
-            }
-
-            /* Responsive */
-            @media (max-width: 480px) {
-                .status-container {
-                    max-width: 95%;
-                    left: 2.5% !important;
-                    right: 2.5% !important;
-                    transform: none !important;
-                    top: 10px !important;
-                    bottom: auto !important;
-                }
-                .status-item {
-                    font-size: 0.85rem;
-                    padding: 12px 14px;
-                }
-            }
-        `;
-
-        const styleTag = document.createElement('style');
-        styleTag.id = 'status-manager-styles';
-        styleTag.textContent = styles;
-        document.head.appendChild(styleTag);
+    shutdown() {
+        this.isShuttingDown = true;
+        this.clearAll();
+        this.statuses.clear();
+        this.activeStatuses = [];
+        this.statusHistory = [];
+        this.queue = [];
+        this.log('🛑 StatusManager shutdown complete');
     }
 }
-
-// ==========================================
-// AUTO-INITIALIZE
-// ==========================================
-const statusManager = new StatusManager();
-statusManager.init();
-
-export default StatusManager;
