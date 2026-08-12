@@ -1,837 +1,1180 @@
 // ============================================
-// MODAL MANAGER
-// Advanced Modal Dialog System
+// MODAL MANAGER - ULTIMATE ADVANCED MODAL ENGINE
 // ============================================
 
 export default class ModalManager {
-    constructor() {
+    constructor(options = {}) {
         // ==========================================
-        // STATE
+        // CORE STATE
         // ==========================================
-        this.modalContainer = document.getElementById('modalContainer') || this.createContainer();
+        this.modals = new Map();
         this.activeModals = [];
-        this.zIndex = 1000;
-        this.defaultConfig = {
-            size: 'medium',
-            closeOnOverlayClick: true,
-            closeOnEscape: true,
-            showCloseButton: true,
-            showFooter: true,
-            showConfirm: true,
-            showCancel: true,
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            confirmClass: 'primary',
-            cancelClass: 'secondary',
-            animation: 'fade',
-            draggable: false,
-            resizable: false,
-            width: null,
-            height: null
+        this.modalHistory = [];
+        this.stack = [];
+        this.idCounter = 0;
+        this.isShuttingDown = false;
+        this.eventListeners = new Map();
+        this.animationQueue = [];
+        this.focusTrapStack = [];
+        this.stats = {
+            totalModals: 0,
+            activeModals: 0,
+            openedModals: 0,
+            closedModals: 0,
+            maxConcurrent: 0,
+            averageDuration: 0,
+            totalDuration: 0
         };
-        
-        // Size presets
-        this.sizes = {
-            small: { width: '400px', maxWidth: '90%' },
-            medium: { width: '600px', maxWidth: '90%' },
-            large: { width: '800px', maxWidth: '95%' },
-            xlarge: { width: '1000px', maxWidth: '98%' },
-            full: { width: '100%', maxWidth: '100%', height: '100%', maxHeight: '100%' }
+
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        this.config = {
+            // Core
+            enableAnimation: options.enableAnimation !== false,
+            enableTransitions: options.enableTransitions !== false,
+            enableFocusTrap: options.enableFocusTrap !== false,
+            enableBackdrop: options.enableBackdrop !== false,
+            enableEscToClose: options.enableEscToClose !== false,
+            enableClickOutside: options.enableClickOutside !== false,
+            enableResize: options.enableResize !== false,
+            enableDrag: options.enableDrag !== false,
+            enableStacking: options.enableStacking !== false,
+            enableZIndexManagement: options.enableZIndexManagement !== false,
+            enableAnimationQueue: options.enableAnimationQueue !== false,
+            enableHistory: options.enableHistory !== false,
+            enablePersistent: options.enablePersistent !== false,
+            enableScrollLock: options.enableScrollLock !== false,
+            enableBodyClass: options.enableBodyClass !== false,
+            enableAria: options.enableAria !== false,
+            enableAccessibility: options.enableAccessibility !== false,
+            enableKeyboardNavigation: options.enableKeyboardNavigation !== false,
+            enableScreenReaderSupport: options.enableScreenReaderSupport !== false,
+
+            // Animation
+            animationDuration: options.animationDuration || 300,
+            animationEasing: options.animationEasing || 'ease',
+            animationType: options.animationType || 'fade',
+            transitionDuration: options.transitionDuration || 200,
+
+            // Styling
+            backdropOpacity: options.backdropOpacity || 0.5,
+            backdropColor: options.backdropColor || 'rgba(0,0,0,0.5)',
+            modalMinWidth: options.modalMinWidth || 300,
+            modalMaxWidth: options.modalMaxWidth || 800,
+            modalMinHeight: options.modalMinHeight || 200,
+            modalMaxHeight: options.modalMaxHeight || '90vh',
+            borderRadius: options.borderRadius || 8,
+            boxShadow: options.boxShadow || '0 20px 60px rgba(0,0,0,0.3)',
+
+            // Behavior
+            defaultPosition: options.defaultPosition || 'center',
+            defaultSize: options.defaultSize || 'medium',
+            closeOnEscape: options.closeOnEscape !== false,
+            closeOnBackdrop: options.closeOnBackdrop !== false,
+            closeOnOutsideClick: options.closeOnOutsideClick !== false,
+            preventBodyScroll: options.preventBodyScroll !== false,
+
+            // Limits
+            maxModals: options.maxModals || 100,
+            maxConcurrentModals: options.maxConcurrentModals || 10,
+            maxQueueSize: options.maxQueueSize || 50,
+
+            // Logging
+            enableLogging: options.enableLogging !== false,
+            logLevel: options.logLevel || 'info'
         };
-        
-        // Animation classes
+
+        // ==========================================
+        // DEFAULT ANIMATIONS
+        // ==========================================
         this.animations = {
-            fade: 'modal-animation-fade',
-            slide: 'modal-animation-slide',
-            scale: 'modal-animation-scale',
-            slideUp: 'modal-animation-slide-up',
-            slideDown: 'modal-animation-slide-down'
+            fade: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['none', 'none']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['none', 'none']
+                }
+            },
+            slide: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['translateY(-20px)', 'translateY(0)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['translateY(0)', 'translateY(20px)']
+                }
+            },
+            scale: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['scale(0.95)', 'scale(1)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['scale(1)', 'scale(0.95)']
+                }
+            },
+            slideUp: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['translateY(50px)', 'translateY(0)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['translateY(0)', 'translateY(50px)']
+                }
+            },
+            slideDown: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['translateY(-50px)', 'translateY(0)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['translateY(0)', 'translateY(-50px)']
+                }
+            },
+            slideLeft: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['translateX(50px)', 'translateX(0)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['translateX(0)', 'translateX(50px)']
+                }
+            },
+            slideRight: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['translateX(-50px)', 'translateX(0)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['translateX(0)', 'translateX(-50px)']
+                }
+            },
+            zoom: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['scale(0.9)', 'scale(1)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['scale(1)', 'scale(0.9)']
+                }
+            },
+            flip: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['rotateY(-90deg)', 'rotateY(0)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['rotateY(0)', 'rotateY(90deg)']
+                }
+            },
+            bounce: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['scale(0.3)', 'scale(1)']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['scale(1)', 'scale(0.3)']
+                }
+            },
+            custom: {
+                in: {
+                    opacity: [0, 1],
+                    transform: ['none', 'none']
+                },
+                out: {
+                    opacity: [1, 0],
+                    transform: ['none', 'none']
+                }
+            }
+        };
+
+        // ==========================================
+        // DEFAULT SIZES
+        // ==========================================
+        this.sizes = {
+            tiny: {
+                width: 300,
+                height: 200,
+                maxWidth: 400,
+                maxHeight: 300
+            },
+            small: {
+                width: 400,
+                height: 300,
+                maxWidth: 500,
+                maxHeight: 400
+            },
+            medium: {
+                width: 600,
+                height: 400,
+                maxWidth: 800,
+                maxHeight: 600
+            },
+            large: {
+                width: 800,
+                height: 600,
+                maxWidth: 1000,
+                maxHeight: 800
+            },
+            xlarge: {
+                width: 1000,
+                height: 800,
+                maxWidth: 1200,
+                maxHeight: 1000
+            },
+            fullscreen: {
+                width: '100vw',
+                height: '100vh',
+                maxWidth: '100vw',
+                maxHeight: '100vh'
+            },
+            auto: {
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '90vw',
+                maxHeight: '90vh'
+            }
+        };
+
+        // ==========================================
+        // DEFAULT POSITIONS
+        // ==========================================
+        this.positions = {
+            center: {
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)'
+            },
+            top: {
+                top: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)'
+            },
+            bottom: {
+                bottom: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)'
+            },
+            left: {
+                top: '50%',
+                left: '20px',
+                transform: 'translateY(-50%)'
+            },
+            right: {
+                top: '50%',
+                right: '20px',
+                transform: 'translateY(-50%)'
+            },
+            topLeft: {
+                top: '20px',
+                left: '20px'
+            },
+            topRight: {
+                top: '20px',
+                right: '20px'
+            },
+            bottomLeft: {
+                bottom: '20px',
+                left: '20px'
+            },
+            bottomRight: {
+                bottom: '20px',
+                right: '20px'
+            }
+        };
+
+        this.log('🎯 ModalManager Ultimate initialized');
+        this.log(`📦 Animations: ${Object.keys(this.animations).length}`);
+        this.log(`📐 Sizes: ${Object.keys(this.sizes).length}`);
+        this.log(`📍 Positions: ${Object.keys(this.positions).length}`);
+    }
+
+    // ==========================================
+    // MAIN MODAL METHODS
+    // ==========================================
+
+    open(content, options = {}) {
+        if (this.isShuttingDown) {
+            throw new Error('ModalManager is shutting down');
+        }
+
+        if (this.activeModals.length >= this.config.maxConcurrentModals) {
+            this.log(`⚠️ Max concurrent modals reached (${this.config.maxConcurrentModals})`);
+            return this.queueModal(content, options);
+        }
+
+        const id = this.generateId();
+        const modal = this.createModal(id, content, options);
+
+        // Add to stack
+        this.stack.push(modal);
+        this.activeModals.push(modal);
+        this.modals.set(id, modal);
+
+        // Update stats
+        this.stats.totalModals++;
+        this.stats.openedModals++;
+        this.stats.activeModals = this.activeModals.length;
+        this.stats.maxConcurrent = Math.max(this.stats.maxConcurrent, this.activeModals.length);
+
+        // Render modal
+        this.renderModal(modal);
+
+        // Apply animations
+        if (this.config.enableAnimation) {
+            this.animateModalIn(modal);
+        }
+
+        // Lock scroll
+        if (this.config.enableScrollLock) {
+            this.lockScroll();
+        }
+
+        // Setup focus trap
+        if (this.config.enableFocusTrap) {
+            this.setupFocusTrap(modal);
+        }
+
+        // Setup event listeners
+        this.setupModalListeners(modal);
+
+        this.log(`📂 Opened modal: ${id} (${modal.title || 'unnamed'})`);
+        this.emit('modalOpened', { id, modal });
+
+        return {
+            id,
+            modal,
+            close: () => this.close(id),
+            update: (newContent) => this.update(id, newContent),
+            on: (event, callback) => this.onModalEvent(id, event, callback)
+        };
+    }
+
+    close(id) {
+        const modal = this.modals.get(id);
+        if (!modal) {
+            this.log(`⚠️ Modal ${id} not found`);
+            return false;
+        }
+
+        // Animate out
+        if (this.config.enableAnimation) {
+            this.animateModalOut(modal);
+        }
+
+        // Remove from active
+        const index = this.activeModals.indexOf(modal);
+        if (index !== -1) {
+            this.activeModals.splice(index, 1);
+        }
+
+        // Remove from stack
+        const stackIndex = this.stack.indexOf(modal);
+        if (stackIndex !== -1) {
+            this.stack.splice(stackIndex, 1);
+        }
+
+        // Remove modal
+        this.removeModal(modal);
+
+        // Update stats
+        this.stats.closedModals++;
+        this.stats.activeModals = this.activeModals.length;
+        this.stats.totalDuration += Date.now() - modal.timestamp;
+
+        // Unlock scroll
+        if (this.config.enableScrollLock && this.activeModals.length === 0) {
+            this.unlockScroll();
+        }
+
+        // Remove focus trap
+        if (this.config.enableFocusTrap) {
+            this.removeFocusTrap(modal);
+        }
+
+        this.log(`📂 Closed modal: ${id} (${modal.title || 'unnamed'})`);
+        this.emit('modalClosed', { id, modal });
+
+        // Process queue
+        this.processQueue();
+
+        return true;
+    }
+
+    closeAll() {
+        const count = this.activeModals.length;
+        const ids = this.activeModals.map(m => m.id);
+
+        for (const id of ids) {
+            this.close(id);
+        }
+
+        this.log(`📂 Closed all ${count} modals`);
+        this.emit('allModalsClosed', { count });
+
+        return count;
+    }
+
+    closeTop() {
+        if (this.activeModals.length === 0) {
+            return false;
+        }
+
+        const top = this.activeModals[this.activeModals.length - 1];
+        return this.close(top.id);
+    }
+
+    // ==========================================
+    // MODAL CREATION
+    // ==========================================
+
+    createModal(id, content, options) {
+        const size = this.sizes[options.size || this.config.defaultSize] || this.sizes.medium;
+        const position = this.positions[options.position || this.config.defaultPosition] || this.positions.center;
+        const animation = this.animations[options.animation || this.config.animationType] || this.animations.fade;
+
+        return {
+            id,
+            content,
+            title: options.title || null,
+            subtitle: options.subtitle || null,
+            size: options.size || this.config.defaultSize,
+            position: options.position || this.config.defaultPosition,
+            animation: options.animation || this.config.animationType,
+            width: options.width || size.width,
+            height: options.height || size.height,
+            maxWidth: options.maxWidth || size.maxWidth,
+            maxHeight: options.maxHeight || size.maxHeight,
+            positionStyle: position,
+            animationStyle: animation,
+            backdrop: options.backdrop !== false,
+            closeOnEscape: options.closeOnEscape !== undefined ? options.closeOnEscape : this.config.closeOnEscape,
+            closeOnBackdrop: options.closeOnBackdrop !== undefined ? options.closeOnBackdrop : this.config.closeOnBackdrop,
+            closeOnOutsideClick: options.closeOnOutsideClick !== undefined ? options.closeOnOutsideClick : this.config.closeOnOutsideClick,
+            preventBodyScroll: options.preventBodyScroll !== undefined ? options.preventBodyScroll : this.config.preventBodyScroll,
+            draggable: options.draggable || this.config.enableDrag,
+            resizable: options.resizable || this.config.enableResize,
+            persistent: options.persistent || this.config.enablePersistent,
+            zIndex: options.zIndex || (1000 + this.stack.length * 10),
+            className: options.className || '',
+            style: options.style || {},
+            data: options.data || {},
+            timestamp: Date.now(),
+            events: new Map(),
+            element: null,
+            backdropElement: null,
+            isAnimating: false,
+            isOpen: false
         };
     }
 
     // ==========================================
-    // CONTAINER CREATION
+    // RENDERING
     // ==========================================
-    createContainer() {
-        const container = document.createElement('div');
-        container.id = 'modalContainer';
-        container.className = 'modal-container';
-        document.body.appendChild(container);
-        return container;
-    }
 
-    // ==========================================
-    // SHOW MODAL
-    // ==========================================
-    show(options = {}) {
-        const config = {
-            ...this.defaultConfig,
-            ...options,
-            size: options.size || 'medium'
-        };
-
-        // Validate
-        if (!config.content && !config.html) {
-            console.error('Modal content is required');
-            return null;
-        }
-
-        // Create overlay
-        const overlay = document.createElement('div');
-        overlay.className = `modal-overlay ${this.animations[config.animation] || 'modal-animation-fade'}`;
-        overlay.style.zIndex = this.zIndex++;
-
-        // Create modal
-        const modal = document.createElement('div');
-        modal.className = `modal modal-${config.size}`;
-        modal.style.width = config.width || this.sizes[config.size]?.width || '600px';
-        modal.style.maxWidth = config.maxWidth || this.sizes[config.size]?.maxWidth || '90%';
-        if (config.height) modal.style.height = config.height;
-        if (config.maxHeight) modal.style.maxHeight = config.maxHeight;
-
-        // Build header
-        let headerHtml = '';
-        if (config.title) {
-            headerHtml = `
-                <div class="modal-header">
-                    <h3>${config.title}</h3>
-                    ${config.showCloseButton ? '<button class="modal-close" aria-label="Close modal">&times;</button>' : ''}
-                </div>
+    renderModal(modal) {
+        // Create backdrop
+        if (modal.backdrop) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop';
+            backdrop.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: ${this.config.backdropColor};
+                opacity: ${this.config.backdropOpacity};
+                z-index: ${modal.zIndex - 1};
+                transition: opacity ${this.config.animationDuration}ms ${this.config.animationEasing};
             `;
-        } else if (config.showCloseButton) {
-            headerHtml = `
-                <div class="modal-header modal-header-empty">
-                    <button class="modal-close" aria-label="Close modal">&times;</button>
-                </div>
-            `;
-        }
+            document.body.appendChild(backdrop);
+            modal.backdropElement = backdrop;
 
-        // Build body
-        let bodyHtml = '';
-        if (config.content) {
-            bodyHtml = `<div class="modal-body">${config.content}</div>`;
-        } else if (config.html) {
-            bodyHtml = config.html;
-        }
-
-        // Build footer
-        let footerHtml = '';
-        if (config.showFooter) {
-            const cancelBtn = config.showCancel ? 
-                `<button class="btn modal-cancel ${config.cancelClass}">${config.cancelText}</button>` : '';
-            const confirmBtn = config.showConfirm ? 
-                `<button class="btn modal-confirm ${config.confirmClass}">${config.confirmText}</button>` : '';
-            
-            if (cancelBtn || confirmBtn) {
-                footerHtml = `
-                    <div class="modal-footer">
-                        ${cancelBtn}
-                        ${confirmBtn}
-                    </div>
-                `;
+            // Backdrop click
+            if (modal.closeOnBackdrop || modal.closeOnOutsideClick) {
+                backdrop.addEventListener('click', (e) => {
+                    if (e.target === backdrop) {
+                        this.close(modal.id);
+                    }
+                });
             }
         }
 
-        // Assemble modal
-        modal.innerHTML = `
-            ${headerHtml}
-            ${bodyHtml}
-            ${footerHtml}
+        // Create modal element
+        const element = document.createElement('div');
+        element.className = `modal ${modal.className}`;
+        element.id = `modal-${modal.id}`;
+        element.style.cssText = `
+            position: fixed;
+            ${this.getPositionCSS(modal.positionStyle)}
+            width: ${typeof modal.width === 'number' ? modal.width + 'px' : modal.width};
+            height: ${typeof modal.height === 'number' ? modal.height + 'px' : modal.height};
+            max-width: ${typeof modal.maxWidth === 'number' ? modal.maxWidth + 'px' : modal.maxWidth};
+            max-height: ${typeof modal.maxHeight === 'number' ? modal.maxHeight + 'px' : modal.maxHeight};
+            z-index: ${modal.zIndex};
+            background: white;
+            border-radius: ${this.config.borderRadius}px;
+            box-shadow: ${this.config.boxShadow};
+            opacity: 0;
+            transform: ${this.getInitialTransform(modal.animationStyle)};
+            transition: all ${this.config.animationDuration}ms ${this.config.animationEasing};
+            overflow: auto;
+            ${this.getAdditionalStyles(modal)}
         `;
 
-        overlay.appendChild(modal);
-        this.modalContainer.appendChild(overlay);
+        // Add content
+        element.innerHTML = this.buildModalContent(modal);
 
-        // Store modal data
-        const modalData = {
-            id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-            overlay: overlay,
-            modal: modal,
-            config: config,
-            onClose: config.onClose || null,
-            onConfirm: config.onConfirm || null,
-            onCancel: config.onCancel || null,
-            onOpen: config.onOpen || null,
-            isOpen: true,
-            closeOnOverlayClick: config.closeOnOverlayClick,
-            closeOnEscape: config.closeOnEscape
-        };
+        document.body.appendChild(element);
+        modal.element = element;
+        modal.isOpen = true;
 
-        this.activeModals.push(modalData);
-
-        // Setup event listeners
-        this.setupModalEvents(modalData);
-
-        // Call onOpen callback
-        if (modalData.onOpen) {
-            modalData.onOpen(modalData);
+        // Setup resize
+        if (modal.resizable) {
+            this.setupResize(modal);
         }
 
-        // Focus management
-        const focusable = modal.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusable.length > 0) {
-            setTimeout(() => focusable[0].focus(), 100);
+        // Setup drag
+        if (modal.draggable) {
+            this.setupDrag(modal);
         }
 
-        // Prevent body scroll
-        document.body.style.overflow = 'hidden';
+        // Setup focus trap
+        if (this.config.enableFocusTrap) {
+            this.setupFocusTrap(modal);
+        }
 
-        return modalData;
+        // Setup close buttons
+        const closeButtons = element.querySelectorAll('[data-close-modal]');
+        for (const btn of closeButtons) {
+            btn.addEventListener('click', () => this.close(modal.id));
+        }
+
+        this.emit('modalRendered', { id: modal.id, modal });
+    }
+
+    buildModalContent(modal) {
+        let html = '';
+
+        // Header
+        if (modal.title) {
+            html += `
+                <div class="modal-header">
+                    ${modal.title ? `<h2 class="modal-title">${modal.title}</h2>` : ''}
+                    ${modal.subtitle ? `<p class="modal-subtitle">${modal.subtitle}</p>` : ''}
+                    <button class="modal-close" data-close-modal aria-label="Close modal">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            `;
+        }
+
+        // Body
+        html += `
+            <div class="modal-body">
+                ${typeof modal.content === 'function' ? modal.content() : modal.content}
+            </div>
+        `;
+
+        // Footer (if provided)
+        if (modal.footer) {
+            html += `
+                <div class="modal-footer">
+                    ${typeof modal.footer === 'function' ? modal.footer() : modal.footer}
+                </div>
+            `;
+        }
+
+        return html;
     }
 
     // ==========================================
-    // SETUP MODAL EVENTS
+    // ANIMATIONS
     // ==========================================
-    setupModalEvents(modalData) {
-        const { overlay, modal, config } = modalData;
 
-        // Close button
-        const closeBtn = modal.querySelector('.modal-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.close(modalData));
+    animateModalIn(modal) {
+        if (!modal.element) return;
+
+        modal.isAnimating = true;
+
+        // Set initial state
+        const animation = modal.animationStyle;
+        const initialTransform = this.getInitialTransform(animation);
+        const initialOpacity = this.getInitialOpacity(animation);
+
+        modal.element.style.transform = initialTransform;
+        modal.element.style.opacity = initialOpacity;
+
+        // Trigger animation
+        requestAnimationFrame(() => {
+            modal.element.style.transform = this.getFinalTransform(animation);
+            modal.element.style.opacity = '1';
+
+            // Update backdrop
+            if (modal.backdropElement) {
+                modal.backdropElement.style.opacity = this.config.backdropOpacity;
+            }
+
+            setTimeout(() => {
+                modal.isAnimating = false;
+                this.emit('modalAnimationComplete', { id: modal.id, direction: 'in' });
+            }, this.config.animationDuration);
+        });
+    }
+
+    animateModalOut(modal) {
+        if (!modal.element || modal.isAnimating) return;
+
+        modal.isAnimating = true;
+
+        const animation = modal.animationStyle;
+
+        modal.element.style.transform = this.getOutTransform(animation);
+        modal.element.style.opacity = '0';
+
+        // Update backdrop
+        if (modal.backdropElement) {
+            modal.backdropElement.style.opacity = '0';
         }
 
-        // Cancel button
-        const cancelBtn = modal.querySelector('.modal-cancel');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', (e) => {
-                if (modalData.onCancel) {
-                    const result = modalData.onCancel(e);
-                    if (result !== false) {
-                        this.close(modalData);
-                    }
-                } else {
-                    this.close(modalData);
-                }
-            });
-        }
+        setTimeout(() => {
+            modal.isAnimating = false;
+            this.emit('modalAnimationComplete', { id: modal.id, direction: 'out' });
+        }, this.config.animationDuration);
+    }
 
-        // Confirm button
-        const confirmBtn = modal.querySelector('.modal-confirm');
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', (e) => {
-                if (modalData.onConfirm) {
-                    const result = modalData.onConfirm(e);
-                    if (result !== false) {
-                        this.close(modalData);
-                    }
-                } else {
-                    this.close(modalData);
-                }
-            });
-        }
-
-        // Overlay click
-        if (modalData.closeOnOverlayClick) {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    this.close(modalData);
-                }
-            });
-        }
-
-        // Escape key
-        if (modalData.closeOnEscape) {
-            const escapeHandler = (e) => {
-                if (e.key === 'Escape') {
-                    this.close(modalData);
-                    document.removeEventListener('keydown', escapeHandler);
-                }
-            };
-            document.addEventListener('keydown', escapeHandler);
-            modalData._escapeHandler = escapeHandler;
-        }
-
-        // Draggable
-        if (config.draggable) {
-            this.makeDraggable(modal);
-        }
-
-        // Resizable
-        if (config.resizable) {
-            this.makeResizable(modal);
-        }
-
-        // Handle click outside to close
-        if (config.clickOutsideToClose) {
-            document.addEventListener('click', (e) => {
-                if (!modal.contains(e.target) && e.target !== overlay) {
-                    this.close(modalData);
-                }
-            });
+    getInitialTransform(animation) {
+        switch (animation) {
+            case 'fade': return 'none';
+            case 'slide': return 'translateY(-20px)';
+            case 'scale': return 'scale(0.95)';
+            case 'slideUp': return 'translateY(50px)';
+            case 'slideDown': return 'translateY(-50px)';
+            case 'slideLeft': return 'translateX(50px)';
+            case 'slideRight': return 'translateX(-50px)';
+            case 'zoom': return 'scale(0.9)';
+            case 'flip': return 'rotateY(-90deg)';
+            case 'bounce': return 'scale(0.3)';
+            default: return 'none';
         }
     }
 
+    getFinalTransform(animation) {
+        return 'none';
+    }
+
+    getOutTransform(animation) {
+        switch (animation) {
+            case 'fade': return 'none';
+            case 'slide': return 'translateY(20px)';
+            case 'scale': return 'scale(0.95)';
+            case 'slideUp': return 'translateY(-50px)';
+            case 'slideDown': return 'translateY(50px)';
+            case 'slideLeft': return 'translateX(-50px)';
+            case 'slideRight': return 'translateX(50px)';
+            case 'zoom': return 'scale(0.9)';
+            case 'flip': return 'rotateY(90deg)';
+            case 'bounce': return 'scale(0.3)';
+            default: return 'none';
+        }
+    }
+
+    getInitialOpacity(animation) {
+        return '0';
+    }
+
     // ==========================================
-    // DRAGGABLE MODAL
+    // POSITIONING
     // ==========================================
-    makeDraggable(modal) {
+
+    getPositionCSS(position) {
+        return Object.entries(position)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('; ');
+    }
+
+    getAdditionalStyles(modal) {
+        const styles = modal.style || {};
+        return Object.entries(styles)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('; ');
+    }
+
+    // ==========================================
+    // DRAG AND RESIZE
+    // ==========================================
+
+    setupDrag(modal) {
+        if (!modal.element) return;
+
         let isDragging = false;
-        let startX, startY, initialX, initialY;
+        let startX, startY, startLeft, startTop;
 
-        const header = modal.querySelector('.modal-header');
+        const header = modal.element.querySelector('.modal-header');
         if (!header) return;
 
-        header.style.cursor = 'move';
+        header.style.cursor = 'grab';
 
-        header.addEventListener('mousedown', (e) => {
+        const onMouseDown = (e) => {
+            if (e.target.closest('.modal-close')) return;
+
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
-            initialX = modal.offsetLeft;
-            initialY = modal.offsetTop;
-            modal.style.cursor = 'grabbing';
-        });
 
-        document.addEventListener('mousemove', (e) => {
+            const rect = modal.element.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+
+            header.style.cursor = 'grabbing';
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        };
+
+        const onMouseMove = (e) => {
             if (!isDragging) return;
+
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
-            modal.style.left = (initialX + dx) + 'px';
-            modal.style.top = (initialY + dy) + 'px';
-            modal.style.position = 'relative';
-        });
 
-        document.addEventListener('mouseup', () => {
+            modal.element.style.left = `${startLeft + dx}px`;
+            modal.element.style.top = `${startTop + dy}px`;
+            modal.element.style.transform = 'none';
+        };
+
+        const onMouseUp = () => {
             isDragging = false;
-            modal.style.cursor = '';
-        });
+            header.style.cursor = 'grab';
+
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        header.addEventListener('mousedown', onMouseDown);
     }
 
-    // ==========================================
-    // RESIZABLE MODAL
-    // ==========================================
-    makeResizable(modal) {
-        const resizeHandle = document.createElement('div');
-        resizeHandle.className = 'modal-resize-handle';
-        resizeHandle.style.cssText = `
+    setupResize(modal) {
+        if (!modal.element) return;
+
+        // Create resize handle
+        const handle = document.createElement('div');
+        handle.className = 'modal-resize-handle';
+        handle.style.cssText = `
             position: absolute;
             bottom: 0;
             right: 0;
             width: 20px;
             height: 20px;
             cursor: nwse-resize;
-            background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.2) 50%);
+            background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 50%);
         `;
-        modal.appendChild(resizeHandle);
+
+        modal.element.style.position = 'relative';
+        modal.element.appendChild(handle);
 
         let isResizing = false;
         let startX, startY, startWidth, startHeight;
 
-        resizeHandle.addEventListener('mousedown', (e) => {
+        const onMouseDown = (e) => {
             isResizing = true;
             startX = e.clientX;
             startY = e.clientY;
-            startWidth = modal.offsetWidth;
-            startHeight = modal.offsetHeight;
-            e.preventDefault();
-        });
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isResizing) return;
-            const newWidth = startWidth + (e.clientX - startX);
-            const newHeight = startHeight + (e.clientY - startY);
-            if (newWidth > 200) modal.style.width = newWidth + 'px';
-            if (newHeight > 100) modal.style.height = newHeight + 'px';
-        });
+            const rect = modal.element.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
 
-        document.addEventListener('mouseup', () => {
-            isResizing = false;
-        });
-    }
-
-    // ==========================================
-    // CLOSE MODAL
-    // ==========================================
-    close(modalData) {
-        if (!modalData) {
-            // Close the most recent modal
-            const lastModal = this.activeModals[this.activeModals.length - 1];
-            if (lastModal) {
-                this.close(lastModal);
-            }
-            return;
-        }
-
-        // Remove from active modals
-        const index = this.activeModals.indexOf(modalData);
-        if (index !== -1) {
-            this.activeModals.splice(index, 1);
-        }
-
-        // Remove escape handler
-        if (modalData._escapeHandler) {
-            document.removeEventListener('keydown', modalData._escapeHandler);
-        }
-
-        // Call onClose callback
-        if (modalData.onClose) {
-            modalData.onClose(modalData);
-        }
-
-        // Animate out
-        modalData.overlay.classList.add('modal-closing');
-        setTimeout(() => {
-            modalData.overlay.remove();
-        }, 300);
-
-        modalData.isOpen = false;
-
-        // Restore body scroll if no modals left
-        if (this.activeModals.length === 0) {
-            document.body.style.overflow = '';
-        }
-
-        // Focus management - return focus to previous element
-        if (modalData._previousFocus) {
-            modalData._previousFocus.focus();
-        }
-    }
-
-    // ==========================================
-    // CLOSE ALL MODALS
-    // ==========================================
-    closeAll() {
-        while (this.activeModals.length > 0) {
-            const modalData = this.activeModals.pop();
-            if (modalData.onClose) {
-                modalData.onClose(modalData);
-            }
-            modalData.overlay.remove();
-        }
-        document.body.style.overflow = '';
-    }
-
-    // ==========================================
-    // UPDATE MODAL
-    // ==========================================
-    update(modalData, options = {}) {
-        if (!modalData || !modalData.isOpen) {
-            console.warn('Cannot update closed modal');
-            return;
-        }
-
-        const { modal } = modalData;
-
-        // Update content
-        if (options.content) {
-            const body = modal.querySelector('.modal-body');
-            if (body) {
-                body.innerHTML = options.content;
-            }
-        }
-
-        // Update title
-        if (options.title) {
-            const header = modal.querySelector('.modal-header h3');
-            if (header) {
-                header.textContent = options.title;
-            }
-        }
-
-        // Update buttons
-        if (options.confirmText) {
-            const confirmBtn = modal.querySelector('.modal-confirm');
-            if (confirmBtn) {
-                confirmBtn.textContent = options.confirmText;
-            }
-        }
-
-        if (options.cancelText) {
-            const cancelBtn = modal.querySelector('.modal-cancel');
-            if (cancelBtn) {
-                cancelBtn.textContent = options.cancelText;
-            }
-        }
-
-        // Update size
-        if (options.size) {
-            modal.className = `modal modal-${options.size}`;
-        }
-    }
-
-    // ==========================================
-    // GET MODAL DATA
-    // ==========================================
-    getActiveModals() {
-        return this.activeModals;
-    }
-
-    getLatestModal() {
-        return this.activeModals[this.activeModals.length - 1] || null;
-    }
-
-    isModalOpen() {
-        return this.activeModals.length > 0;
-    }
-
-    // ==========================================
-    // CONVENIENCE METHODS
-    // ==========================================
-    alert(message, title = 'Alert', options = {}) {
-        return this.show({
-            title: title,
-            content: `<div class="modal-alert"><p>${message}</p></div>`,
-            showCancel: false,
-            confirmText: 'OK',
-            ...options
-        });
-    }
-
-    confirm(message, title = 'Confirm', options = {}) {
-        return new Promise((resolve) => {
-            this.show({
-                title: title,
-                content: `<div class="modal-confirm-content"><p>${message}</p></div>`,
-                confirmText: options.confirmText || 'Yes',
-                cancelText: options.cancelText || 'No',
-                onConfirm: () => {
-                    resolve(true);
-                },
-                onCancel: () => {
-                    resolve(false);
-                },
-                ...options
-            });
-        });
-    }
-
-    prompt(message, title = 'Prompt', options = {}) {
-        return new Promise((resolve) => {
-            const inputHtml = `
-                <div class="modal-prompt-content">
-                    <p>${message}</p>
-                    <input type="${options.inputType || 'text'}" 
-                           id="modalPromptInput" 
-                           class="input-field" 
-                           placeholder="${options.placeholder || ''}"
-                           value="${options.defaultValue || ''}">
-                </div>
-            `;
-
-            this.show({
-                title: title,
-                content: inputHtml,
-                confirmText: options.confirmText || 'OK',
-                cancelText: options.cancelText || 'Cancel',
-                onConfirm: () => {
-                    const input = document.getElementById('modalPromptInput');
-                    resolve(input ? input.value : null);
-                },
-                onCancel: () => {
-                    resolve(null);
-                },
-                ...options
-            });
-        });
-    }
-
-    toast(message, type = 'info', duration = 3000) {
-        const toast = document.createElement('div');
-        toast.className = `modal-toast modal-toast-${type}`;
-        
-        const icons = {
-            info: 'ℹ️',
-            success: '✅',
-            warning: '⚠️',
-            error: '❌'
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
         };
-        
-        toast.innerHTML = `
-            <span class="modal-toast-icon">${icons[type] || 'ℹ️'}</span>
-            <span class="modal-toast-message">${message}</span>
-        `;
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.classList.add('modal-toast-show');
-        }, 10);
-        
-        setTimeout(() => {
-            toast.classList.remove('modal-toast-show');
-            setTimeout(() => toast.remove(), 300);
-        }, duration);
-        
-        return toast;
+
+        const onMouseMove = (e) => {
+            if (!isResizing) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            const newWidth = Math.max(
+                this.config.modalMinWidth,
+                Math.min(this.config.modalMaxWidth, startWidth + dx)
+            );
+            const newHeight = Math.max(
+                this.config.modalMinHeight,
+                Math.min(parseInt(this.config.modalMaxHeight), startHeight + dy)
+            );
+
+            modal.element.style.width = `${newWidth}px`;
+            modal.element.style.height = `${newHeight}px`;
+        };
+
+        const onMouseUp = () => {
+            isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        handle.addEventListener('mousedown', onMouseDown);
     }
 
     // ==========================================
-    // STYLE INJECTION
+    // FOCUS TRAP
     // ==========================================
-    injectStyles() {
-        const styles = `
-            /* Modal Container */
-            .modal-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 1000;
-                pointer-events: none;
-            }
 
-            .modal-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.7);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                pointer-events: all;
-                animation: modalFadeIn 0.3s ease;
-            }
+    setupFocusTrap(modal) {
+        if (!modal.element) return;
 
-            .modal-overlay.modal-closing {
-                animation: modalFadeOut 0.3s ease forwards;
-            }
+        const focusableElements = modal.element.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
 
-            /* Modal */
-            .modal {
-                background: #1a1a2e;
-                border-radius: 16px;
-                padding: 24px;
-                max-height: 90vh;
-                overflow-y: auto;
-                border: 1px solid rgba(74, 158, 255, 0.15);
-                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-                position: relative;
-                pointer-events: all;
-                width: 600px;
-                max-width: 90%;
-                transition: all 0.3s ease;
-            }
+        if (focusableElements.length === 0) return;
 
-            body.light .modal {
-                background: #ffffff;
-                border-color: rgba(0, 0, 0, 0.1);
-                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-            }
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
 
-            /* Modal Sizes */
-            .modal-small { width: 400px; max-width: 90%; }
-            .modal-medium { width: 600px; max-width: 90%; }
-            .modal-large { width: 800px; max-width: 95%; }
-            .modal-xlarge { width: 1000px; max-width: 98%; }
-            .modal-full { width: 100%; max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
+        // Focus first element
+        setTimeout(() => firstFocusable.focus(), 100);
 
-            /* Modal Header */
-            .modal-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 20px;
-                padding-bottom: 12px;
-                border-bottom: 1px solid rgba(74, 158, 255, 0.08);
-            }
+        const handleKeyDown = (e) => {
+            if (e.key !== 'Tab') return;
 
-            .modal-header h3 {
-                color: #4a9eff;
-                font-size: 1.2rem;
-                margin: 0;
-            }
-
-            .modal-header-empty {
-                border-bottom: none;
-                margin-bottom: 0;
-                padding-bottom: 0;
-                justify-content: flex-end;
-            }
-
-            .modal-close {
-                background: none;
-                border: none;
-                color: #8899aa;
-                font-size: 1.5rem;
-                cursor: pointer;
-                transition: color 0.3s;
-                padding: 4px 8px;
-                line-height: 1;
-            }
-
-            .modal-close:hover {
-                color: #ff4757;
-            }
-
-            body.light .modal-close {
-                color: #666;
-            }
-
-            body.light .modal-close:hover {
-                color: #ff4757;
-            }
-
-            /* Modal Body */
-            .modal-body {
-                margin-bottom: 20px;
-                max-height: 60vh;
-                overflow-y: auto;
-                padding: 4px 0;
-            }
-
-            .modal-body::-webkit-scrollbar {
-                width: 4px;
-            }
-
-            .modal-body::-webkit-scrollbar-thumb {
-                background: rgba(74, 158, 255, 0.3);
-                border-radius: 2px;
-            }
-
-            /* Modal Footer */
-            .modal-footer {
-                display: flex;
-                justify-content: flex-end;
-                gap: 10px;
-                padding-top: 16px;
-                border-top: 1px solid rgba(74, 158, 255, 0.08);
-            }
-
-            /* Animations */
-            .modal-animation-fade {
-                animation: modalFadeIn 0.3s ease;
-            }
-
-            .modal-animation-slide {
-                animation: modalSlideIn 0.3s ease;
-            }
-
-            .modal-animation-scale {
-                animation: modalScaleIn 0.3s ease;
-            }
-
-            .modal-animation-slide-up {
-                animation: modalSlideUp 0.3s ease;
-            }
-
-            .modal-animation-slide-down {
-                animation: modalSlideDown 0.3s ease;
-            }
-
-            @keyframes modalFadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-
-            @keyframes modalFadeOut {
-                from { opacity: 1; }
-                to { opacity: 0; }
-            }
-
-            @keyframes modalSlideIn {
-                from { transform: translateY(-30px); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-
-            @keyframes modalScaleIn {
-                from { transform: scale(0.9); opacity: 0; }
-                to { transform: scale(1); opacity: 1; }
-            }
-
-            @keyframes modalSlideUp {
-                from { transform: translateY(30px); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-
-            @keyframes modalSlideDown {
-                from { transform: translateY(-30px); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-
-            /* Toast */
-            .modal-toast {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                background: rgba(13, 26, 42, 0.95);
-                backdrop-filter: blur(12px);
-                padding: 14px 24px;
-                border-radius: 12px;
-                border: 1px solid rgba(74, 158, 255, 0.15);
-                color: #e0e0e0;
-                font-size: 0.9rem;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                z-index: 9999;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-                transform: translateX(100px);
-                opacity: 0;
-                transition: all 0.3s ease;
-            }
-
-            .modal-toast.modal-toast-show {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            .modal-toast-icon {
-                font-size: 1.2rem;
-            }
-
-            .modal-toast-info { border-left: 4px solid #4a9eff; }
-            .modal-toast-success { border-left: 4px solid #4CAF50; }
-            .modal-toast-warning { border-left: 4px solid #ffd700; }
-            .modal-toast-error { border-left: 4px solid #ff4757; }
-
-            body.light .modal-toast {
-                background: rgba(255, 255, 255, 0.95);
-                color: #1a1a2e;
-                border-color: rgba(0, 0, 0, 0.1);
-            }
-
-            /* Prompt Input */
-            .modal-prompt-content .input-field {
-                width: 100%;
-                margin-top: 10px;
-            }
-
-            /* Responsive */
-            @media (max-width: 768px) {
-                .modal {
-                    padding: 16px;
-                    max-height: 95vh;
+            if (e.shiftKey) {
+                if (document.activeElement === firstFocusable) {
+                    e.preventDefault();
+                    lastFocusable.focus();
                 }
-                .modal-small,
-                .modal-medium,
-                .modal-large,
-                .modal-xlarge {
-                    width: 95%;
-                }
-                .modal-footer {
-                    flex-direction: column;
-                }
-                .modal-footer .btn {
-                    width: 100%;
-                    justify-content: center;
+            } else {
+                if (document.activeElement === lastFocusable) {
+                    e.preventDefault();
+                    firstFocusable.focus();
                 }
             }
-        `;
+        };
 
-        const styleTag = document.createElement('style');
-        styleTag.textContent = styles;
-        document.head.appendChild(styleTag);
+        modal.element.addEventListener('keydown', handleKeyDown);
+        modal.focusTrapHandler = handleKeyDown;
+
+        this.focusTrapStack.push(modal);
+    }
+
+    removeFocusTrap(modal) {
+        if (modal.element && modal.focusTrapHandler) {
+            modal.element.removeEventListener('keydown', modal.focusTrapHandler);
+        }
+
+        const index = this.focusTrapStack.indexOf(modal);
+        if (index !== -1) {
+            this.focusTrapStack.splice(index, 1);
+        }
     }
 
     // ==========================================
-    // INIT
+    // SCROLL LOCK
     // ==========================================
-    init() {
-        this.injectStyles();
-        console.log('🪟 Modal Manager initialized');
+
+    lockScroll() {
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+    }
+
+    unlockScroll() {
+        const scrollY = parseInt(document.body.style.top || '0', 10) * -1;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+    }
+
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+
+    setupModalListeners(modal) {
+        // ESC key
+        if (modal.closeOnEscape && this.config.enableEscToClose) {
+            const handleKeyDown = (e) => {
+                if (e.key === 'Escape' && this.activeModals[this.activeModals.length - 1]?.id === modal.id) {
+                    this.close(modal.id);
+                }
+            };
+
+            document.addEventListener('keydown', handleKeyDown);
+            modal.escapeHandler = handleKeyDown;
+        }
+
+        // Window resize
+        const handleResize = () => {
+            this.emit('modalResized', { id: modal.id });
+        };
+
+        window.addEventListener('resize', handleResize);
+        modal.resizeHandler = handleResize;
+    }
+
+    // ==========================================
+    // MODAL EVENTS
+    // ==========================================
+
+    onModalEvent(id, event, callback) {
+        const modal = this.modals.get(id);
+        if (!modal) return false;
+
+        if (!modal.events.has(event)) {
+            modal.events.set(event, []);
+        }
+        modal.events.get(event).push(callback);
+        return true;
+    }
+
+    emitModalEvent(id, event, data) {
+        const modal = this.modals.get(id);
+        if (!modal) return;
+
+        if (modal.events.has(event)) {
+            for (const callback of modal.events.get(event)) {
+                try {
+                    callback(data);
+                } catch (error) {
+                    console.error(`Error in modal event ${event}:`, error);
+                }
+            }
+        }
+    }
+
+    // ==========================================
+    // QUEUE MANAGEMENT
+    // ==========================================
+
+    queueModal(content, options) {
+        return new Promise((resolve) => {
+            this.animationQueue.push({
+                content,
+                options,
+                resolve
+            });
+
+            this.log(`📥 Modal queued (position: ${this.animationQueue.length})`);
+            this.emit('modalQueued', { queueLength: this.animationQueue.length });
+        });
+    }
+
+    processQueue() {
+        if (this.animationQueue.length === 0) return;
+        if (this.activeModals.length >= this.config.maxConcurrentModals) return;
+
+        const queued = this.animationQueue.shift();
+        if (!queued) return;
+
+        const result = this.open(queued.content, queued.options);
+        queued.resolve(result);
+    }
+
+    // ==========================================
+    // UPDATE
+    // ==========================================
+
+    update(id, newContent) {
+        const modal = this.modals.get(id);
+        if (!modal) return false;
+
+        modal.content = newContent;
+
+        // Re-render content
+        if (modal.element) {
+            const body = modal.element.querySelector('.modal-body');
+            if (body) {
+                body.innerHTML = typeof newContent === 'function' ? newContent() : newContent;
+            }
+        }
+
+        modal.timestamp = Date.now();
+        this.emit('modalUpdated', { id, modal });
+
+        return true;
+    }
+
+    // ==========================================
+    // REMOVE
+    // ==========================================
+
+    removeModal(modal) {
+        // Remove element
+        if (modal.element && modal.element.parentNode) {
+            modal.element.parentNode.removeChild(modal.element);
+        }
+
+        // Remove backdrop
+        if (modal.backdropElement && modal.backdropElement.parentNode) {
+            modal.backdropElement.parentNode.removeChild(modal.backdropElement);
+        }
+
+        // Remove from map
+        this.modals.delete(modal.id);
+
+        // Cleanup event listeners
+        if (modal.escapeHandler) {
+            document.removeEventListener('keydown', modal.escapeHandler);
+        }
+        if (modal.resizeHandler) {
+            window.removeEventListener('resize', modal.resizeHandler);
+        }
+
+        this.emit('modalRemoved', { id: modal.id });
+    }
+
+    // ==========================================
+    // GETTERS
+    // ==========================================
+
+    getModal(id) {
+        return this.modals.get(id) || null;
+    }
+
+    getActiveModals() {
+        return [...this.activeModals];
+    }
+
+    getModalCount() {
+        return this.activeModals.length;
+    }
+
+    getStack() {
+        return [...this.stack];
+    }
+
+    getStats() {
+        return {
+            ...this.stats,
+            averageDuration: this.stats.totalModals > 0 
+                ? this.stats.totalDuration / this.stats.totalModals 
+                : 0
+        };
+    }
+
+    // ==========================================
+    // UTILITY METHODS
+    // ==========================================
+
+    generateId() {
+        this.idCounter++;
+        return 'modal_' + Date.now() + '_' + this.idCounter + '_' + 
+               Math.random().toString(36).substr(2, 6);
+    }
+
+    log(message) {
+        if (this.config.enableLogging) {
+            const timestamp = new Date().toISOString();
+            console.log(`[ModalManager] ${timestamp} - ${message}`);
+        }
+    }
+
+    // ==========================================
+    // EVENT SYSTEM
+    // ==========================================
+
+    on(event, callback) {
+        if (!this.eventListeners.has(event)) {
+            this.eventListeners.set(event, []);
+        }
+        this.eventListeners.get(event).push(callback);
+        return this;
+    }
+
+    off(event, callback) {
+        if (this.eventListeners.has(event)) {
+            const callbacks = this.eventListeners.get(event);
+            const index = callbacks.indexOf(callback);
+            if (index !== -1) {
+                callbacks.splice(index, 1);
+            }
+        }
+        return this;
+    }
+
+    emit(event, data) {
+        if (this.eventListeners.has(event)) {
+            const callbacks = this.eventListeners.get(event);
+            for (const callback of callbacks) {
+                try {
+                    callback(data);
+                } catch (error) {
+                    console.error(`Error in event listener for ${event}:`, error);
+                }
+            }
+        }
+        return this;
+    }
+
+    // ==========================================
+    // SERIALIZATION
+    // ==========================================
+
+    toJSON() {
+        return {
+            version: '2.0.0',
+            stats: this.stats,
+            config: this.config,
+            modals: Array.from(this.modals.entries()).map(([id, modal]) => ({
+                id,
+                ...modal,
+                element: null,
+                backdropElement: null
+            }))
+        };
+    }
+
+    static fromJSON(data) {
+        const manager = new ModalManager(data.config);
+        manager.stats = data.stats || manager.stats;
+        if (data.modals) {
+            for (const modalData of data.modals) {
+                const { id, ...modal } = modalData;
+                manager.modals.set(id, {
+                    ...modal,
+                    element: null,
+                    backdropElement: null
+                });
+                manager.activeModals.push(modal);
+            }
+        }
+        return manager;
+    }
+
+    // ==========================================
+    // SHUTDOWN
+    // ==========================================
+
+    shutdown() {
+        this.isShuttingDown = true;
+        this.closeAll();
+        this.modals.clear();
+        this.activeModals = [];
+        this.stack = [];
+        this.focusTrapStack = [];
+        this.animationQueue = [];
+        this.modalHistory = [];
+        this.log('🛑 ModalManager shutdown complete');
     }
 }
-
-// Auto-initialize
-const modalManager = new ModalManager();
-modalManager.init();
-
-export default ModalManager;
